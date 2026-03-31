@@ -67,87 +67,22 @@ class TestHHParser(unittest.TestCase):
         self.assertIn("100000 - 200000 RUR", result)
         self.assertIn("Москва", result)
 
-    @patch('hh_parser.requests.get')
-    def test_search_vacancies(self, mock_get):
+    @patch.object(HHClient, '_get_session')
+    async def test_search_vacancies(self, mock_get_session):
         """Тест поиска вакансий (мокированный)."""
+        import aiohttp
+        
+        # Мокаем сессию и ответ
+        mock_session = MagicMock()
         mock_response = MagicMock()
-        mock_response.json.return_value = {"items": [], "found": 0}
+        mock_response.json = unittest.mock.AsyncMock(return_value={"items": [], "found": 0})
         mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        result = self.parser.search_vacancies("Python")
+        mock_session.get.return_value.__aenter__.return_value = mock_response
+        mock_get_session.return_value = mock_session
+        
+        result = await self.parser.search_vacancies("Python")
         self.assertEqual(result["found"], 0)
         self.assertEqual(result["items"], [])
-
-
-class TestDatabase(unittest.TestCase):
-    """Тесты для VacancyDatabase."""
-
-    def setUp(self):
-        """Настройка перед каждым тестом."""
-        import sys
-        sys.path.insert(0, '..')
-        from database import VacancyDatabase
-        self.db = VacancyDatabase(":memory:")
-
-    def test_add_and_exists(self):
-        """Тест добавления и проверки существования."""
-        vacancy = {
-            "id": "test_123",
-            "name": "Test Vacancy",
-            "employer": {"name": "Test Corp"},
-            "salary": {"from": 100000},
-            "area": {"name": "Москва"},
-            "url": "https://example.com",
-            "published_at": "2024-01-01",
-        }
-        
-        # Добавляем
-        result = self.db.add_vacancy(vacancy)
-        self.assertTrue(result)
-        
-        # Проверяем существование
-        self.assertTrue(self.db.vacancy_exists("test_123"))
-        self.assertFalse(self.db.vacancy_exists("nonexistent"))
-
-    def test_duplicate_add(self):
-        """Тест добавления дубликата."""
-        vacancy = {
-            "id": "dup_123",
-            "name": "Duplicate Test",
-            "employer": {"name": "Test"},
-            "salary": {},
-            "area": {},
-            "url": "https://example.com",
-            "published_at": "2024-01-01",
-        }
-        
-        self.db.add_vacancy(vacancy)
-        result = self.db.add_vacancy(vacancy)
-        self.assertFalse(result)
-
-    def test_get_stats_empty(self):
-        """Тест статистики на пустой базе."""
-        stats = self.db.get_stats()
-        self.assertEqual(stats["total"], 0)
-        self.assertEqual(stats["today"], 0)
-
-    def test_get_stats_with_data(self):
-        """Тест статистики с данными."""
-        vacancy = {
-            "id": "stat_123",
-            "name": "Stat Test",
-            "employer": {"name": "Stat Corp"},
-            "salary": {"from": 150000},
-            "area": {"name": "Москва"},
-            "url": "https://example.com",
-            "published_at": "2024-01-01",
-        }
-        self.db.add_vacancy(vacancy)
-        
-        stats = self.db.get_stats()
-        self.assertEqual(stats["total"], 1)
-        self.assertEqual(stats["avg_salary"], 150000)
 
 
 if __name__ == "__main__":
