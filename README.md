@@ -54,9 +54,29 @@ python main.py
 | `HH_SEARCH_TEXT` | Поисковый запрос | "Python разработчик" |
 | `HH_AREA` | Регион | "1"=Москва, "2"=СПб, "104"=Россия |
 | `HH_SALARY_FROM` | Мин. зарплата | 100000 или None |
-| `HH_EMPLOYMENT` | Тип занятости | ["full", "part"] или None |
-| `HH_EXPERIENCE` | Опыт работы | ["noExperience", "between1And3"] или None |
+| `HH_EMPLOYMENT` | Тип занятости | `["full", "part"]` или `None` |
+| `HH_EXPERIENCE` | Опыт работы | `["noExperience", "between1And3"]` или `None` |
 | `CHECK_INTERVAL` | Интервал проверки | 300 (5 минут) |
+
+### Типы занятости (`HH_EMPLOYMENT`)
+
+- `["full"]` — полная занятость
+- `["part"]` — частичная занятость
+- `["project"]` — проектная работа
+- `["internship"]` — стажировка
+- `None` — любой тип
+
+**Пример:** `HH_EMPLOYMENT = ["full", "part"]`
+
+### Опыт работы (`HH_EXPERIENCE`)
+
+- `["noExperience"]` — без опыта
+- `["between1And3"]` — от 1 до 3 лет
+- `["between3And6"]` — от 3 до 6 лет
+- `["moreThan6"]` — более 6 лет
+- `None` — любой опыт
+
+**Пример:** `HH_EXPERIENCE = ["between1And3", "between3And6"]`
 
 ## Коды регионов
 
