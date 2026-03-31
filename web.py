@@ -2,12 +2,13 @@
 """Веб-интерфейс HH Tracker на FastAPI."""
 
 import logging
+import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from database import VacancyDatabase
@@ -28,8 +29,10 @@ app = FastAPI(
 # Инициализация БД
 db = VacancyDatabase(DB_PATH)
 
-# Шаблоны
-templates = Jinja2Templates(directory="templates")
+# Шаблоны (абсолютный путь)
+BASE_DIR = Path(__file__).parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 @app.get("/", response_class=HTMLResponse, tags=["UI"])
