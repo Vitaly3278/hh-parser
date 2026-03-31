@@ -60,17 +60,26 @@ class VacancyBot:
         result = self._make_request("getUpdates", data)
         return result.get("result", [])
 
-    def send_message(self, text: str, reply_markup: dict = None, chat_id: str = None):
+    def send_message(self, text: str, reply_markup: dict = None, chat_id: str = None, parse_mode: str = "HTML"):
         """Отправка сообщения."""
         target_chat = chat_id or self.active_chat_id or self.chat_id
         data = {
             "chat_id": str(target_chat),
             "text": text,
-            "parse_mode": "HTML",
+            "parse_mode": parse_mode,
         }
         if reply_markup:
             data["reply_markup"] = reply_markup
-        return self._make_request("sendMessage", data)
+        
+        result = self._make_request("sendMessage", data)
+        
+        # Если HTML не работает, пробуем без parse_mode
+        if not result.get("ok") and parse_mode == "HTML":
+            logger.debug("Повторная отправка без HTML...")
+            data["parse_mode"] = None
+            result = self._make_request("sendMessage", data)
+        
+        return result
 
     def answer_callback(self, callback_query_id: str, text: str = None):
         """Ответ на callback."""
@@ -256,19 +265,8 @@ class VacancyBot:
         
         bot_name = result.get("result", {}).get("username", "Bot")
         logger.info(f"✅ Бот @{bot_name} запущен")
-        logger.info(f"Chat ID: {self.chat_id}")
-        
-        # Отправляем приветственное сообщение
-        welcome_sent = self.send_message(
-            "🤖 <b>HH Tracker Bot запущен!</b>\n\n"
-            f"Я @{bot_name}\n"
-            "Используйте /start для начала работы",
-            self.get_menu_keyboard()
-        )
-        
-        if not welcome_sent:
-            logger.warning("⚠️ Не удалось отправить приветственное сообщение. Проверьте chat_id!")
-            logger.warning(f"Текущий chat_id: {self.chat_id}")
+        logger.info(f"Chat ID из конфига: {self.chat_id}")
+        logger.info("ℹ️ Отправьте боту /start для начала работы")
         
         offset = 0
         logger.info("Ожидание сообщений...")
