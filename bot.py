@@ -30,6 +30,7 @@ class VacancyBot:
         self.db = VacancyDatabase(DB_PATH)
         self.base_url = f"https://api.telegram.org/bot{self.token}"
         self.running = True
+        self.active_chat_id = None  # Chat ID последнего активного чата
         
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
@@ -44,9 +45,11 @@ class VacancyBot:
         import requests
         url = f"{self.base_url}/{method}"
         try:
-            response = requests.post(url, data=data, timeout=10)
+            response = requests.post(url, data=data, timeout=30)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            logger.debug(f"{method}: {result}")
+            return result
         except Exception as e:
             logger.error(f"API error: {e}")
             return {}
@@ -57,10 +60,11 @@ class VacancyBot:
         result = self._make_request("getUpdates", data)
         return result.get("result", [])
 
-    def send_message(self, text: str, reply_markup: dict = None):
+    def send_message(self, text: str, reply_markup: dict = None, chat_id: str = None):
         """Отправка сообщения."""
+        target_chat = chat_id or self.active_chat_id or self.chat_id
         data = {
-            "chat_id": self.chat_id,
+            "chat_id": str(target_chat),
             "text": text,
             "parse_mode": "HTML",
         }
@@ -99,8 +103,11 @@ class VacancyBot:
             ]
         }
 
-    def handle_command(self, command: str):
+    def handle_command(self, command: str, chat_id: str):
         """Обработка команд."""
+        # Сохраняем активный чат
+        self.active_chat_id = chat_id
+        
         if command == "/start":
             message = (
                 "👋 <b>Привет! Я HH Tracker Bot</b>\n\n"
@@ -110,16 +117,16 @@ class VacancyBot:
                 "• Очищать старую базу\n\n"
                 "Выберите действие:"
             )
-            self.send_message(message, self.get_menu_keyboard())
+            self.send_message(message, self.get_menu_keyboard(), chat_id=chat_id)
         
         elif command == "/stats":
-            self.show_stats()
+            self.show_stats(chat_id=chat_id)
         
         elif command == "/vacancies":
-            self.show_vacancies(limit=10)
+            self.show_vacancies(limit=10, chat_id=chat_id)
         
         elif command == "/menu":
-            self.send_message("Главное меню:", self.get_menu_keyboard())
+            self.send_message("Главное меню:", self.get_menu_keyboard(), chat_id=chat_id)
         
         else:
             self.send_message(
@@ -128,10 +135,11 @@ class VacancyBot:
                 "/start - Главное меню\n"
                 "/stats - Статистика\n"
                 "/vacancies - Последние вакансии\n"
-                "/menu - Показать меню"
+                "/menu - Показать меню",
+                chat_id=chat_id
             )
 
-    def show_stats(self):
+    def show_stats(self, chat_id: str = None):
         """Показать статистику."""
         stats = self.db.get_stats()
         message = (
@@ -149,14 +157,14 @@ class VacancyBot:
                 [{"text": "🔙 Меню", "callback_data": "menu"}],
             ]
         }
-        self.send_message(message, keyboard)
+        self.send_message(message, keyboard, chat_id=chat_id)
 
-    def show_vacancies(self, limit: int = 10, page: int = 0):
+    def show_vacancies(self, limit: int = 10, page: int = 0, chat_id: str = None):
         """Показать вакансии."""
         vacancies = self.db.get_all_vacancies()
         
         if not vacancies:
-            self.send_message("📭 В базе нет вакансий")
+            self.send_message("📭 В базе нет вакансий", chat_id=chat_id)
             return
         
         per_page = 5
@@ -198,42 +206,43 @@ class VacancyBot:
         
         keyboard.append([{"text": "🔙 Меню", "callback_data": "menu"}])
 
-        self.send_message(message, {"inline_keyboard": keyboard})
+        self.send_message(message, {"inline_keyboard": keyboard}, chat_id=chat_id)
 
-    def clear_old_vacancies(self, days: int = 30):
+    def clear_old_vacancies(self, chat_id: str = None):
         """Очистка старых вакансий."""
-        deleted = self.db.clear_old_vacancies(days)
+        deleted = self.db.clear_old_vacancies(days=30)
         message = f"🗑 Удалено старых вакансий: <b>{deleted}</b>"
-        self.send_message(message)
+        self.send_message(message, chat_id=chat_id)
 
     def handle_callback(self, callback: dict):
         """Обработка callback от кнопок."""
         callback_id = callback.get("id")
         data = callback.get("data", "")
         message = callback.get("message", {})
+        chat_id = message.get("chat", {}).get("id")
         message_id = message.get("message_id") if message else None
 
-        logger.info(f"Callback: {data}")
+        logger.info(f"Callback: {data} from chat: {chat_id}")
         self.answer_callback(callback_id)
 
         if data == "menu":
-            self.send_message("Главное меню:", self.get_menu_keyboard())
+            self.send_message("Главное меню:", self.get_menu_keyboard(), chat_id=chat_id)
         
         elif data == "stats":
-            self.show_stats()
+            self.show_stats(chat_id=chat_id)
         
         elif data == "last_10":
-            self.show_vacancies(limit=10)
+            self.show_vacancies(limit=10, chat_id=chat_id)
         
         elif data == "all_vacancies":
-            self.show_vacancies(limit=100)
+            self.show_vacancies(limit=100, chat_id=chat_id)
         
         elif data == "clear_old":
-            self.clear_old_vacancies()
+            self.clear_old_vacancies(chat_id=chat_id)
         
         elif data.startswith("page_"):
             page = int(data.split("_")[1])
-            self.show_vacancies(limit=100, page=page)
+            self.show_vacancies(limit=100, page=page, chat_id=chat_id)
 
     def run(self):
         """Запуск бота."""
@@ -247,14 +256,19 @@ class VacancyBot:
         
         bot_name = result.get("result", {}).get("username", "Bot")
         logger.info(f"✅ Бот @{bot_name} запущен")
+        logger.info(f"Chat ID: {self.chat_id}")
         
         # Отправляем приветственное сообщение
-        self.send_message(
+        welcome_sent = self.send_message(
             "🤖 <b>HH Tracker Bot запущен!</b>\n\n"
             f"Я @{bot_name}\n"
             "Используйте /start для начала работы",
             self.get_menu_keyboard()
         )
+        
+        if not welcome_sent:
+            logger.warning("⚠️ Не удалось отправить приветственное сообщение. Проверьте chat_id!")
+            logger.warning(f"Текущий chat_id: {self.chat_id}")
         
         offset = 0
         logger.info("Ожидание сообщений...")
@@ -270,13 +284,10 @@ class VacancyBot:
                     message = update.get("message")
                     if message:
                         chat_id = message.get("chat", {}).get("id")
-                        if str(chat_id) != str(self.chat_id):
-                            continue
-                        
                         text = message.get("text", "")
                         if text.startswith("/"):
                             command = text.split()[0]
-                            self.handle_command(command)
+                            self.handle_command(command, str(chat_id))
                     
                     # Callback от кнопки
                     callback = update.get("callback_query")
