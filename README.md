@@ -4,12 +4,12 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Приложение для автоматического отслеживания новых вакансий на hh.ru с отправкой уведомлений в **Telegram**, **Email** и **Slack**.
+Приложение для автоматического отслеживания новых вакансий на hh.ru с отправкой уведомлений в **Telegram** и **Email**.
 
 ## 🚀 Возможности
 
 - ✅ Мониторинг вакансий hh.ru по заданным параметрам
-- ✅ Уведомления в Telegram, Email и Slack
+- ✅ Уведомления в Telegram и Email
 - ✅ Фильтрация по исключающим словам (например, "стажировка")
 - ✅ База данных SQLite с миграциями (Alembic)
 - ✅ Статистика и отчёты
@@ -32,13 +32,10 @@
 ├── hh_parser.py         # Парсер hh.ru API (асинхронный)
 ├── telegram_bot.py      # Telegram уведомления (aiohttp)
 ├── email_bot.py         # Email уведомления
-├── slack_bot.py         # Slack уведомления (асинхронный)
 ├── database.py          # База данных SQLite (SQLAlchemy)
-├── web.py               # Веб-интерфейс (FastAPI)
 ├── config.py            # Конфигурация
 ├── .env                 # Переменные окружения (не в git!)
 ├── .env.example         # Шаблон конфигурации
-├── config.yaml.example  # YAML конфигурация (опционально)
 ├── alembic.ini          # Alembic конфигурация
 ├── alembic/             # Миграции БД
 ├── Dockerfile           # Docker образ
@@ -90,12 +87,6 @@ EMAIL_PASSWORD=your_app_password
 EMAIL_RECIPIENT=recipient@example.com
 ```
 
-**Опционально — Slack:**
-```ini
-SLACK_ENABLED=true
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-```
-
 **Параметры поиска:**
 ```ini
 HH_SEARCH_TEXT=Python разработчик
@@ -137,7 +128,6 @@ start.bat
 Это запустит:
 - 📡 Трекер вакансий (мониторинг hh.ru)
 - 🤖 Telegram бот
-- 🌐 Веб-интерфейс (http://localhost:8000)
 
 ---
 
@@ -185,15 +175,11 @@ python bot.py
 
 ## 🐳 Docker
 
-### Запуск через docker-compose (всё сразу)
+### Запуск через docker-compose
 
 ```bash
 docker-compose up -d
 ```
-
-Это запустит:
-- Трекер вакансий
-- Веб-интерфейс на http://localhost:8000
 
 Просмотр логов:
 ```bash
@@ -204,23 +190,6 @@ docker-compose logs -f
 ```bash
 docker-compose down
 ```
-
-## 🌐 Веб-интерфейс
-
-Запустите веб-сервер:
-
-```bash
-python web.py
-```
-
-Откройте http://localhost:8000
-
-**API endpoints:**
-- `GET /` — Главная страница с вакансиями
-- `GET /api/stats` — Статистика
-- `GET /api/vacancies` — Список вакансий
-- `GET /api/vacancies/{id}` — Вакансия по ID
-- `DELETE /api/vacancies/clear?days=30` — Очистить старые
 
 ## 📊 Параметры поиска
 

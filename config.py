@@ -34,10 +34,6 @@ EMAIL_USER = os.getenv('EMAIL_USER', '')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', '')
 EMAIL_RECIPIENT = os.getenv('EMAIL_RECIPIENT', '')
 
-# Slack уведомления (опционально)
-SLACK_ENABLED = os.getenv('SLACK_ENABLED', 'false').lower() == 'true'
-SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL', '')
-
 # HH.ru параметры
 HH_SEARCH_TEXT = os.getenv('HH_SEARCH_TEXT', 'Python разработчик')
 HH_AREA = parse_optional(os.getenv('HH_AREA', ''))

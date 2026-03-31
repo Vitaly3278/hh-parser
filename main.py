@@ -24,8 +24,6 @@ from config import (
     EMAIL_USER,
     EMAIL_PASSWORD,
     EMAIL_RECIPIENT,
-    SLACK_ENABLED,
-    SLACK_WEBHOOK_URL,
     HH_SEARCH_TEXT,
     HH_AREA,
     HH_SALARY_FROM,
@@ -40,7 +38,6 @@ from config import (
 from hh_parser import HHParser
 from telegram_bot import TelegramBot
 from email_bot import EmailNotifier
-from slack_bot import SlackBot
 from database import VacancyDatabase
 
 
@@ -97,10 +94,6 @@ class VacancyTracker:
             self.email_bot = EmailNotifier(
                 EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD, EMAIL_RECIPIENT
             )
-
-        self.slack_bot: Optional[SlackBot] = None
-        if SLACK_ENABLED and SLACK_WEBHOOK_URL:
-            self.slack_bot = SlackBot(SLACK_WEBHOOK_URL, http_session)
 
         # Статистика
         self.stats = {
@@ -185,13 +178,6 @@ class VacancyTracker:
             except Exception as e:
                 self.logger.error(f"Ошибка подготовки Email: {e}")
 
-        # Slack
-        if self.slack_bot:
-            try:
-                tasks.append(self.slack_bot.send_vacancy(vacancy))
-            except Exception as e:
-                self.logger.error(f"Ошибка подготовки Slack: {e}")
-
         # Выполняем все уведомления параллельно
         if tasks:
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -243,14 +229,6 @@ class VacancyTracker:
                     self.logger.info("✅ Email подключен")
             except Exception as e:
                 self.logger.error(f"Ошибка подключения Email: {e}")
-
-        if self.slack_bot:
-            try:
-                if await self.slack_bot.test_connection():
-                    connections_ok = True
-                    self.logger.info("✅ Slack подключен")
-            except Exception as e:
-                self.logger.error(f"Ошибка подключения Slack: {e}")
 
         if not connections_ok:
             self.logger.warning("⚠️ Ни один нотификатор не подключен!")
@@ -458,13 +436,12 @@ def main():
     # Проверка конфигурации
     has_notifier = (
         (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID) or
-        (EMAIL_ENABLED and EMAIL_USER) or
-        (SLACK_ENABLED and SLACK_WEBHOOK_URL)
+        (EMAIL_ENABLED and EMAIL_USER)
     )
 
     if not has_notifier:
         logger.error("❌ Не настроен ни один нотификатор!")
-        logger.error("Настройте TELEGRAM_BOT_TOKEN, EMAIL или SLACK_WEBHOOK_URL в .env")
+        logger.error("Настройте TELEGRAM_BOT_TOKEN или EMAIL в .env")
         sys.exit(1)
 
     # Запуск приложения
