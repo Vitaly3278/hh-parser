@@ -33,9 +33,9 @@ async def home(
         })
 
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+        name="index.html",
+        request=request,
+        context={
             "vacancies": formatted_vacancies,
             "stats": stats,
             "total_count": len(vacancies),

@@ -35,8 +35,8 @@ fi
 mkdir -p data logs 2>/dev/null
 
 # Запуск
-echo "📡 Запуск трекера..."
-python main.py >/dev/null 2>&1 &
+echo "📡 Запуск трекера вакансий..."
+python main.py --tracker-only >/dev/null 2>&1 &
 TRACKER_PID=$!
 
 echo "🤖 Запуск Telegram бота..."
