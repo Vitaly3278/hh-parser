@@ -111,7 +111,7 @@ class TelegramNotifier(AbstractNotifier):
         except NotificationError as e:
             # Пробуем без parse_mode
             logger.debug(f"Повторная отправка без {parse_mode}...")
-            data["parse_mode"] = None
+            data.pop("parse_mode", None)
             try:
                 await self._make_request("sendMessage", data)
                 return True
