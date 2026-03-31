@@ -216,8 +216,9 @@ class VacancyBot:
             return
 
         # Получаем текущую страницу из context
-        current_page = context.user_data.get('vacancies_page', 0)
-        context.user_data['vacancies_page'] = current_page + 1
+        current_page = context.user_data.get('vacancies_page', 0) if context.user_data is not None else 0
+        if context.user_data is not None:
+            context.user_data['vacancies_page'] = current_page + 1
 
         await self.show_vacancies(update, context, limit=10, page=current_page + 1)
 
@@ -231,7 +232,8 @@ class VacancyBot:
             return
 
         current_page = max(0, context.user_data.get('vacancies_page', 0) - 1)
-        context.user_data['vacancies_page'] = current_page
+        if context.user_data is not None:
+            context.user_data['vacancies_page'] = current_page
 
         await self.show_vacancies(update, context, limit=10, page=current_page)
 
@@ -265,19 +267,21 @@ class VacancyBot:
             vacancies = self.db.get_all_vacancies()
 
             if not vacancies:
-                await update.effective_message.reply_text("📭 В базе нет вакансий")
+                if update.effective_message:
+                    await update.effective_message.reply_text("📭 В базе нет вакансий")
                 return
 
             # Если страница не указана, берём из context или 0
             if page is None:
-                page = context.user_data.get('vacancies_page', 0)
+                page = context.user_data.get('vacancies_page', 0) if context.user_data is not None else 0
 
             per_page = 5
             total_pages = (len(vacancies) + per_page - 1) // per_page
-            
+
             # Ограничиваем страницу
             page = max(0, min(page, total_pages - 1))
-            context.user_data['vacancies_page'] = page
+            if context.user_data is not None:
+                context.user_data['vacancies_page'] = page
 
             start = page * per_page
             end = start + per_page
@@ -310,11 +314,13 @@ class VacancyBot:
                 text += f"\n<i>Страница {page + 1} из {total_pages}</i>\n"
                 text += "<i>Используйте /prev для предыдущей страницы</i>"
 
-            await update.effective_message.reply_text(text, parse_mode="HTML")
+            if update.effective_message:
+                await update.effective_message.reply_text(text, parse_mode="HTML")
 
         except Exception as e:
             logger.error(f"Ошибка при показе вакансий: {e}", exc_info=True)
-            await update.effective_message.reply_text("❌ Ошибка при получении вакансий")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Ошибка при получении вакансий")
 
     async def clear_old_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Очистка старых вакансий."""
