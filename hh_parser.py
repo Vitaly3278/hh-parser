@@ -46,7 +46,6 @@ class HHParser:
             "text": search_text,
             "page": page,
             "per_page": per_page,
-            "order_by": "publication_time",
         }
 
         if self.area:
