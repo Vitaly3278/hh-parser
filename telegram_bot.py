@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Модуль для отправки уведомлений в Telegram."""
 
+import logging
 import requests
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 class TelegramBot:
@@ -27,6 +30,10 @@ class TelegramBot:
         :param parse_mode: Режим парсинга (HTML или Markdown)
         :return: True если успешно
         """
+        if not self.token or not self.chat_id:
+            logger.warning("Telegram токен или chat_id не указаны")
+            return False
+
         url = f"{self.base_url}/sendMessage"
         data = {
             "chat_id": self.chat_id,
@@ -39,9 +46,14 @@ class TelegramBot:
             response = requests.post(url, data=data, timeout=10)
             response.raise_for_status()
             result = response.json()
-            return result.get("ok", False)
+            if result.get("ok"):
+                logger.debug("Сообщение отправлено в Telegram")
+                return True
+            else:
+                logger.error(f"Telegram API вернул ошибку: {result}")
+                return False
         except requests.RequestException as e:
-            print(f"Ошибка при отправке сообщения в Telegram: {e}")
+            logger.error(f"Ошибка при отправке сообщения в Telegram: {e}")
             return False
 
     def send_vacancy(self, vacancy_data: dict) -> bool:
@@ -89,4 +101,5 @@ class TelegramBot:
 
         :return: True если соединение успешно
         """
+        logger.info("Проверка соединения с Telegram...")
         return self.send_message("✅ Бот подключен и готов к работе!")

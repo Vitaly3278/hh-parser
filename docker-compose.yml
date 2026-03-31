@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  hh-tracker:
+    build: .
+    container_name: hh-vacancy-tracker
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    command: ["python", "main.py"]
+
+  # Веб-интерфейс (опционально)
+  hh-web:
+    build: .
+    container_name: hh-web-interface
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    ports:
+      - "8001:8000"
+    command: ["python", "web.py"]
+    profiles:
+      - web

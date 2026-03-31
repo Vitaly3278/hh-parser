@@ -14,8 +14,17 @@ build/
 # База данных
 *.db
 
+# Логи
+*.log
+
 # Конфигурация с секретами
 config_local.py
+.env
+
+# Тесты
+.pytest_cache/
+.coverage
+htmlcov/
 
 # IDE
 .idea/
@@ -27,3 +36,10 @@ config_local.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Данные Docker
+data/
+logs/
+
+# Qwen
+.qwen/

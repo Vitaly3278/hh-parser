@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Модуль для работы с API hh.ru."""
 
+import logging
 import requests
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+
+logger = logging.getLogger(__name__)
 
 
 class HHParser:
@@ -38,7 +41,7 @@ class HHParser:
         :param page: Номер страницы
         :param per_page: Количество вакансий на странице (макс. 20)
         :param salary_from: Минимальная зарплата
-        :param employment: Тип занятости (например, ['full', 'part', 'project'])
+        :param employment: Тип занятости (например, ['full', 'part'])
         :param experience: Опыт работы (например, ['noExperience', 'between1And3'])
         :return: Словарь с данными о вакансиях
         """
@@ -63,11 +66,14 @@ class HHParser:
         headers = {"User-Agent": self.USER_AGENT}
 
         try:
+            logger.debug(f"Запрос к hh.ru: {params}")
             response = requests.get(self.BASE_URL, params=params, headers=headers, timeout=10)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            logger.info(f"Найдено вакансий: {result.get('found', 0)}")
+            return result
         except requests.RequestException as e:
-            print(f"Ошибка при запросе к hh.ru: {e}")
+            logger.error(f"Ошибка при запросе к hh.ru: {e}")
             return {"items": [], "found": 0}
 
     def get_vacancy_details(self, vacancy_id: str) -> Optional[dict]:
@@ -85,7 +91,7 @@ class HHParser:
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            print(f"Ошибка при получении деталей вакансии: {e}")
+            logger.error(f"Ошибка при получении деталей вакансии: {e}")
             return None
 
     def filter_by_date(self, vacancies: list, hours: int = 24) -> list:
@@ -109,6 +115,33 @@ class HHParser:
                         filtered.append(vacancy)
                 except (ValueError, TypeError):
                     filtered.append(vacancy)
+
+        return filtered
+
+    def filter_by_exclude_words(self, vacancies: list, exclude_words: List[str]) -> list:
+        """
+        Фильтрация вакансий по исключающим словам.
+
+        :param vacancies: Список вакансий
+        :param exclude_words: Список слов для исключения
+        :return: Отфильтрованный список
+        """
+        if not exclude_words:
+            return vacancies
+
+        filtered = []
+        exclude_words_lower = [word.lower() for word in exclude_words]
+
+        for vacancy in vacancies:
+            name = vacancy.get("name", "").lower()
+            description = vacancy.get("description", "").lower() if vacancy.get("description") else ""
+            text = f"{name} {description}"
+
+            # Проверяем, содержит ли текст исключающие слова
+            if not any(word in text for word in exclude_words_lower):
+                filtered.append(vacancy)
+            else:
+                logger.debug(f"Исключена вакансия: {vacancy.get('name', 'Без названия')}")
 
         return filtered
 

@@ -2,8 +2,11 @@
 """Модуль для работы с базой данных вакансий."""
 
 import sqlite3
+import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
+
+logger = logging.getLogger(__name__)
 
 
 class VacancyDatabase:
@@ -38,8 +41,15 @@ class VacancyDatabase:
             )
         """)
 
+        # Индекс для быстрого поиска по дате
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_created_at 
+            ON vacancies(created_at)
+        """)
+
         conn.commit()
         conn.close()
+        logger.debug(f"База данных инициализирована: {self.db_path}")
 
     def vacancy_exists(self, vacancy_id: str) -> bool:
         """
@@ -92,6 +102,7 @@ class VacancyDatabase:
 
         conn.commit()
         conn.close()
+        logger.debug(f"Вакансия добавлена: {vacancy.get('name', 'Без названия')}")
         return True
 
     def add_vacancies_batch(self, vacancies: List[dict]) -> int:
@@ -105,6 +116,9 @@ class VacancyDatabase:
         for vacancy in vacancies:
             if self.add_vacancy(vacancy):
                 added_count += 1
+        
+        if added_count > 0:
+            logger.info(f"Добавлено вакансий: {added_count}")
         return added_count
 
     def get_all_vacancies(self) -> List[dict]:
@@ -162,6 +176,9 @@ class VacancyDatabase:
         deleted_count = cursor.rowcount
         conn.commit()
         conn.close()
+        
+        if deleted_count > 0:
+            logger.info(f"Удалено старых записей: {deleted_count}")
         return deleted_count
 
     def get_stats(self) -> dict:
@@ -173,14 +190,80 @@ class VacancyDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
+        # Общее количество
         cursor.execute("SELECT COUNT(*) FROM vacancies")
         total = cursor.fetchone()[0]
 
+        # За последние 24 часа
         cursor.execute("""
             SELECT COUNT(*) FROM vacancies 
             WHERE datetime(created_at) > datetime('now', '-24 hours')
         """)
         today = cursor.fetchone()[0]
 
+        # За последние 7 дней
+        cursor.execute("""
+            SELECT COUNT(*) FROM vacancies 
+            WHERE datetime(created_at) > datetime('now', '-7 days')
+        """)
+        week = cursor.fetchone()[0]
+
+        # Средняя зарплата (по вакансиям с указанным from)
+        cursor.execute("""
+            SELECT AVG(salary_from) FROM vacancies 
+            WHERE salary_from IS NOT NULL
+        """)
+        avg_salary = cursor.fetchone()[0]
+
+        # Топ работодателей
+        cursor.execute("""
+            SELECT employer, COUNT(*) as count 
+            FROM vacancies 
+            WHERE employer IS NOT NULL 
+            GROUP BY employer 
+            ORDER BY count DESC 
+            LIMIT 5
+        """)
+        top_employers = cursor.fetchall()
+
         conn.close()
-        return {"total": total, "today": today}
+
+        return {
+            "total": total,
+            "today": today,
+            "week": week,
+            "avg_salary": round(avg_salary, 0) if avg_salary else None,
+            "top_employers": [{"employer": row[0], "count": row[1]} for row in top_employers],
+        }
+
+    def get_salary_stats(self) -> dict:
+        """
+        Статистика по зарплатам.
+
+        :return: Словарь со статистикой зарплат
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Мин/макс/средняя
+        cursor.execute("""
+            SELECT 
+                MIN(salary_from),
+                MAX(salary_to),
+                AVG(salary_from),
+                AVG(salary_to),
+                COUNT(*)
+            FROM vacancies 
+            WHERE salary_from IS NOT NULL OR salary_to IS NOT NULL
+        """)
+        row = cursor.fetchone()
+
+        conn.close()
+
+        return {
+            "min_from": row[0],
+            "max_to": row[1],
+            "avg_from": round(row[2], 0) if row[2] else None,
+            "avg_to": round(row[3], 0) if row[3] else None,
+            "with_salary": row[4],
+        }
