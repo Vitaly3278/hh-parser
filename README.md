@@ -27,24 +27,48 @@
 ## 📁 Структура проекта
 
 ```
-├── main.py              # Главный скрипт (асинхронный)
-├── bot.py               # Telegram бот (python-telegram-bot)
-├── hh_parser.py         # Парсер hh.ru API (асинхронный)
-├── telegram_bot.py      # Telegram уведомления (aiohttp)
-├── email_bot.py         # Email уведомления
-├── database.py          # База данных SQLite (SQLAlchemy)
-├── web.py               # Веб-интерфейс (FastAPI)
-├── config.py            # Конфигурация
-├── .env                 # Переменные окружения (не в git!)
-├── .env.example         # Шаблон конфигурации
-├── alembic.ini          # Alembic конфигурация
-├── alembic/             # Миграции БД
-├── Dockerfile           # Docker образ
-├── docker-compose.yml   # Docker Compose
-├── requirements.txt     # Зависимости
-├── pytest.ini           # Настройка тестов
-├── tests/               # Unit-тесты
-└── README.md            # Документация
+hh/
+├── core/                  # Ядро приложения
+│   ├── config.py          # Конфигурация
+│   ├── exceptions.py      # Исключения
+│   └── logger.py          # Логирование
+│
+├── modules/               # Модули
+│   ├── bot/               # Telegram бот
+│   │   ├── bot.py         # Класс бота
+│   │   ├── handlers.py    # Обработчики команд
+│   │   └── rate_limiter.py # Rate limiting
+│   │
+│   ├── parser/            # Парсер hh.ru
+│   │   ├── hh_client.py   # API клиент
+│   │   └── filters.py     # Фильтры вакансий
+│   │
+│   ├── notifier/          # Уведомления
+│   │   ├── base.py        # Базовый класс
+│   │   ├── telegram.py    # Telegram notifier
+│   │   └── email.py       # Email notifier
+│   │
+│   ├── storage/           # Хранение данных
+│   │   ├── models.py      # Модели
+│   │   ├── repository.py  # Репозиторий
+│   │   └── database.py    # База данных
+│   │
+│   └── web/               # Веб-интерфейс
+│       ├── app.py         # FastAPI приложение
+│       ├── routes.py      # API роуты
+│       └── templates/     # HTML шаблоны
+│
+├── services/              # Сервисы
+│   └── vacancy_service.py # Сервис вакансий
+│
+├── tests/                 # Тесты
+├── alembic/               # Миграции БД
+│
+├── app.py                 # Сборка приложения
+├── main.py                # Точка входа
+├── bot.py                 # Запуск бота
+├── web.py                 # Запуск веб-интерфейса
+└── requirements.txt       # Зависимости
 ```
 
 ## ⚙️ Установка
@@ -143,12 +167,22 @@ python main.py
 
 ```bash
 python main.py --bot-only
+# или
+python bot.py
 ```
 
 ### Запуск только трекера (без бота)
 
 ```bash
 python main.py --tracker-only
+```
+
+### Запуск веб-интерфейса
+
+```bash
+python main.py --web
+# или
+python web.py
 ```
 
 ### Однократная проверка (для cron)
@@ -167,12 +201,6 @@ python main.py --stats
 
 ```bash
 python main.py --log-level DEBUG
-```
-
-### Запуск Telegram бота (отдельно)
-
-```bash
-python bot.py
 ```
 
 ## 🐳 Docker
