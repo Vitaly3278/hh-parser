@@ -256,7 +256,7 @@ class VacancyBot:
                 await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
-        current_page = max(0, context.user_data.get('vacancies_page', 0) - 1)
+        current_page = max(0, (context.user_data.get('vacancies_page', 0) if context.user_data is not None else 0) - 1)
         if context.user_data is not None:
             context.user_data['vacancies_page'] = current_page
 
