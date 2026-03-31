@@ -52,7 +52,7 @@ class EmailNotifier(AbstractNotifier):
         self.use_tls = use_tls
         self.enabled = EMAIL_ENABLED
 
-    def send(
+    async def send(
         self,
         message: str,
         subject: str = "HH Tracker",
@@ -140,7 +140,7 @@ class EmailNotifier(AbstractNotifier):
         """.strip()
 
         subject = f"Новая вакансия: {vacancy.name}"
-        return self.send(text_body, subject=subject, html=False)
+        return await self.send(text_body, subject=subject, html=False)
 
     async def send_stats(self, stats: Dict[str, Any]) -> bool:
         """
@@ -160,7 +160,7 @@ class EmailNotifier(AbstractNotifier):
         if stats.get('avg_salary'):
             message += f"\nСредняя ЗП: {stats['avg_salary']}"
 
-        return self.send(message, subject="Статистика вакансий", html=False)
+        return await self.send(message, subject="Статистика вакансий", html=False)
 
     async def test_connection(self) -> bool:
         """
@@ -173,7 +173,7 @@ class EmailNotifier(AbstractNotifier):
             return False
 
         logger.info(f"Проверка соединения с SMTP {self.host}:{self.port}...")
-        return self.send("HH Tracker подключен", subject="Тест подключения", html=False)
+        return await self.send("HH Tracker подключен", subject="Тест подключения", html=False)
 
     async def close(self) -> None:
         """Закрытие соединения (для совместимости)."""
