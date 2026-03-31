@@ -183,6 +183,30 @@ class HHClient:
             f"📅 Опубликовано: {published_at}"
         )
 
+    def filter_by_exclude_words(self, vacancies: List[Dict[str, Any]], exclude_words: List[str]) -> List[Dict[str, Any]]:
+        """
+        Фильтрация вакансий по исключающим словам.
+
+        :param vacancies: Список вакансий
+        :param exclude_words: Слова для исключения
+        :return: Отфильтрованный список
+        """
+        if not exclude_words:
+            return vacancies
+
+        exclude_words_lower = [w.lower() for w in exclude_words]
+        filtered = []
+
+        for vacancy in vacancies:
+            name = vacancy.get("name", "").lower()
+            description = vacancy.get("description", "").lower() if vacancy.get("description") else ""
+            text = f"{name} {description}"
+
+            if not any(word in text for word in exclude_words_lower):
+                filtered.append(vacancy)
+
+        return filtered
+
     async def close(self):
         """Закрытие сессии."""
         if self._session and hasattr(self._session, 'close'):
