@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
-"""Unit-тесты для hh_parser.py."""
+"""Unit-тесты для parser модуля."""
 
 import unittest
 from unittest.mock import patch, MagicMock
-import sys
-sys.path.insert(0, '..')
 
-from hh_parser import HHParser
+from modules.parser.hh_client import HHClient
 
 
 class TestHHParser(unittest.TestCase):
-    """Тесты для HHParser."""
+    """Тесты для HHClient."""
 
     def setUp(self):
         """Настройка перед каждым тестом."""
-        self.parser = HHParser(area=None)
+        self.parser = HHClient(area=None)
 
     def test_init(self):
         """Тест инициализации."""
-        parser = HHParser(area="1", period=7)
+        parser = HHClient(area="1", period=7)
         self.assertEqual(parser.area, "1")
         self.assertEqual(parser.period, 7)
 
