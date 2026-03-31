@@ -451,7 +451,7 @@ def main():
         # Показ статистики
         tracker = VacancyTracker(aiohttp.ClientSession())
         print_stats(tracker)
-        asyncio.run(tracker.db.engine.dispose())
+        tracker.db.engine.dispose()
     else:
         # Запуск
         try:
