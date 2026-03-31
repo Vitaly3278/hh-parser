@@ -1,7 +1,7 @@
 """Создание веб-приложения FastAPI."""
 
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -44,13 +44,28 @@ def create_web_app(repository, templates_dir: str = "templates") -> FastAPI:
     )
 
     # Регистрируем роуты
-    app.get("/", response_class=HTMLResponse)(
-        lambda request: home(request, repository, templates)
-    )
-    app.get("/api/stats")(lambda: get_stats(repository))
-    app.get("/api/vacancies")(lambda limit=50, offset=0: get_vacancies(repository, limit, offset))
-    app.get("/api/vacancies/{vacancy_id}")(lambda vacancy_id: get_vacancy(repository, vacancy_id))
-    app.delete("/api/vacancies/clear")(lambda days=30: clear_old_vacancies(repository, days))
-    app.get("/health")(health_check)
+    @app.get("/", response_class=HTMLResponse)
+    async def home_route(request: Request):
+        return await home(request, repository, templates)
+    
+    @app.get("/api/stats")
+    def stats_route():
+        return get_stats(repository)
+    
+    @app.get("/api/vacancies")
+    def vacancies_route(limit: int = 50, offset: int = 0):
+        return get_vacancies(repository, limit, offset)
+    
+    @app.get("/api/vacancies/{vacancy_id}")
+    def vacancy_route(vacancy_id: str):
+        return get_vacancy(repository, vacancy_id)
+    
+    @app.delete("/api/vacancies/clear")
+    def clear_route(days: int = 30):
+        return clear_old_vacancies(repository, days)
+    
+    @app.get("/health")
+    def health_route():
+        return health_check()
 
     return app
