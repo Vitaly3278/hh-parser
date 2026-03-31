@@ -3,17 +3,20 @@
 import asyncio
 import signal
 import logging
+import threading
 from typing import Optional, List
 
 import aiohttp
+import uvicorn
 
-from core import setup_logging, get_logger, CHECK_INTERVAL
+from core import setup_logging, get_logger, CHECK_INTERVAL, WEB_HOST, WEB_PORT
 from core.exceptions import ConfigError
 from modules.storage import Database, VacancyRepository, get_database
 from modules.parser import HHClient
 from modules.notifier import TelegramNotifier, EmailNotifier, AbstractNotifier
 from modules.bot import TelegramBot
 from services import VacancyService
+from modules.web.app import create_web_app
 
 
 logger = get_logger(__name__)
@@ -30,6 +33,7 @@ class Application:
         self.service: Optional[VacancyService] = None
         self.telegram_bot: Optional[TelegramBot] = None
         self.notifiers: List[AbstractNotifier] = []
+        self.web_app = None
         self.running = False
 
     async def initialize(self):
@@ -54,6 +58,9 @@ class Application:
 
         # Telegram бот
         self.telegram_bot = await self._create_bot()
+
+        # Веб-приложение
+        self.web_app = create_web_app(self.repository)
 
         logger.info("✅ Приложение инициализировано")
 
@@ -132,6 +139,12 @@ class Application:
         if self.telegram_bot:
             logger.info("🤖 Запуск Telegram бота...")
             self.telegram_bot.run()
+
+    def run_web(self):
+        """Запуск веб-интерфейса (в отдельном потоке)."""
+        if self.web_app:
+            logger.info(f"🌐 Запуск веб-интерфейса на http://{WEB_HOST}:{WEB_PORT}...")
+            uvicorn.run(self.web_app, host=WEB_HOST, port=WEB_PORT, log_level="error")
 
     def stop(self):
         """Остановка приложения."""

@@ -22,18 +22,17 @@ from app import Application, create_app
 logger = get_logger(__name__)
 
 
-def run_bot_async(app: Application):
-    """Запуск бота в отдельном потоке."""
-    app.run_bot()
-
-
 async def run_main_app(app: Application, once: bool = False):
     """Запуск основного приложения."""
     await app.initialize()
 
     # Запуск бота в отдельном потоке
-    bot_thread = threading.Thread(target=run_bot_async, args=(app,), daemon=True)
+    bot_thread = threading.Thread(target=app.run_bot, args=(), daemon=True)
     bot_thread.start()
+
+    # Запуск веб-интерфейса в отдельном потоке
+    web_thread = threading.Thread(target=app.run_web, args=(), daemon=True)
+    web_thread.start()
 
     # Запуск трекера
     await app.run_tracker(once=once)

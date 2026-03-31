@@ -34,20 +34,19 @@ fi
 mkdir -p data logs 2>/dev/null
 
 # Запуск
-echo "📡 Запуск трекера с ботом..."
+echo "🚀 Запуск HH Tracker (трекер + бот + веб)..."
 python main.py >/dev/null 2>&1 &
 MAIN_PID=$!
 
-echo "🌐 Запуск веб-интерфейса..."
-python web.py >/dev/null 2>&1 &
-WEB_PID=$!
-
 echo ""
 echo "✅ Готово!"
-echo "   Трекер + Бот: PID $MAIN_PID"
-echo "   Веб: http://localhost:8000 (PID $WEB_PID)"
+echo "   Запущено:"
+echo "   - Трекер вакансий"
+echo "   - Telegram бот"
+echo "   - Веб-интерфейс: http://localhost:8000"
+echo "   PID: $MAIN_PID"
 echo ""
-echo "Остановка: Ctrl+C"
+echo "Остановка: Ctrl+C или kill $MAIN_PID"
 
-trap "kill $MAIN_PID $WEB_PID 2>/dev/null; exit" INT TERM EXIT
+trap "kill $MAIN_PID 2>/dev/null; exit" INT TERM EXIT
 wait
