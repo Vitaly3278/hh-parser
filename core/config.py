@@ -45,7 +45,7 @@ EMAIL_RECIPIENT: str = os.getenv('EMAIL_RECIPIENT', '')
 # =============================================================================
 HH_SEARCH_TEXT: str = os.getenv('HH_SEARCH_TEXT', 'Python разработчик')
 HH_AREA: Optional[str] = parse_optional(os.getenv('HH_AREA', ''))
-HH_SALARY_FROM: Optional[int] = parse_optional(os.getenv('HH_SALARY_FROM', ''), int)
+HH_SALARY_FROM = parse_optional(os.getenv('HH_SALARY_FROM', ''), int)
 HH_EMPLOYMENT: Optional[List[str]] = parse_list(os.getenv('HH_EMPLOYMENT', '')) or None
 HH_EXPERIENCE: Optional[List[str]] = parse_list(os.getenv('HH_EXPERIENCE', '')) or None
 HH_EXCLUDE_WORDS: List[str] = parse_list(os.getenv('HH_EXCLUDE_WORDS', ''))
