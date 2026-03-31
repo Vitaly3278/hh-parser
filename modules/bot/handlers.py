@@ -53,8 +53,27 @@ class CommandHandlers:
             await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
+        # Проверяем количество вакансий
+        count = self.repository.count()
+        
+        if count == 0:
+            message = (
+                "👋 <b>Привет! Я HH Tracker Bot</b>\n\n"
+                "📭 В базе пока нет вакансий\n"
+                "Запустите трекер для поиска вакансий:\n"
+                "<code>python main.py --tracker-only</code>\n\n"
+                "<b>Доступные команды:</b>\n"
+                "/stats - Статистика вакансий\n"
+                "/vacancies - Последние 10 вакансий\n"
+                "/menu - Показать это сообщение\n"
+                "/help - Помощь"
+            )
+            await update.effective_message.reply_text(message, parse_mode="HTML")
+            return
+
         message = (
             "👋 <b>Привет! Я HH Tracker Bot</b>\n\n"
+            f"✅ В базе <b>{count}</b> вакансий\n\n"
             "Я умею:\n"
             "• Показывать статистику вакансий\n"
             "• Выводить последние вакансии\n"
@@ -68,7 +87,9 @@ class CommandHandlers:
             "/prev - Предыдущая страница"
         )
         await update.effective_message.reply_text(message, parse_mode="HTML")
-        await self._show_vacancies(update, context, limit=10)
+        
+        # Показываем 5 последних вакансий
+        await self._show_vacancies(update, context, limit=5)
 
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /stats."""
