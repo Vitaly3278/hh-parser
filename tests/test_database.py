@@ -1,11 +1,11 @@
-"""Unit тесты для модуля database.py."""
+"""Unit тесты для модуля storage."""
 
 import pytest
 import os
 import tempfile
 from datetime import datetime, timedelta
 
-from modules.storage.database import VacancyDatabase
+from modules.storage.database import Database
 from modules.storage.models import Vacancy
 
 
@@ -15,7 +15,7 @@ def db():
     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
         db_path = f.name
     
-    database = VacancyDatabase(db_path)
+    database = Database(db_path)
     yield database
     
     # Очистка после теста
