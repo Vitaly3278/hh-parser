@@ -5,7 +5,8 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 
-from database import VacancyDatabase, Vacancy
+from modules.storage.database import VacancyDatabase
+from modules.storage.models import Vacancy
 
 
 @pytest.fixture
