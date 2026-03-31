@@ -26,7 +26,7 @@ class HHParser:
         self,
         search_text: str,
         page: int = 0,
-        per_page: int = 100,
+        per_page: int = 20,
         salary_from: Optional[int] = None,
         employment: Optional[list] = None,
         experience: Optional[list] = None,
@@ -36,7 +36,7 @@ class HHParser:
 
         :param search_text: Поисковый запрос (название вакансии)
         :param page: Номер страницы
-        :param per_page: Количество вакансий на странице (макс. 100)
+        :param per_page: Количество вакансий на странице (макс. 20)
         :param salary_from: Минимальная зарплата
         :param employment: Тип занятости (например, ['full', 'part', 'project'])
         :param experience: Опыт работы (например, ['noExperience', 'between1And3'])
