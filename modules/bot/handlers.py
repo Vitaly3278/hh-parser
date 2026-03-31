@@ -1,16 +1,14 @@
 """Обработчики команд бота."""
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from core import ALLOWED_CHAT_IDS, TELEGRAM_CHAT_ID
 from core.exceptions import UnauthorizedError
-
-if TYPE_CHECKING:
-    from modules.storage.repository import VacancyRepository
+from modules.storage.repository import VacancyRepository
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +19,7 @@ class CommandHandlers:
 
     def __init__(
         self,
-        repository: 'VacancyRepository',
+        repository: VacancyRepository,
         allowed_chat_ids: Optional[list] = None
     ):
         """
