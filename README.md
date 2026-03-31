@@ -99,6 +99,24 @@ CHECK_INTERVAL=300  # Интервал проверки (секунды)
 
 ## 🚀 Запуск
 
+### ⚡ Быстрый запуск (всё сразу)
+
+**Linux/Mac:**
+```bash
+./start.sh
+```
+
+**Windows:**
+```bash
+start.bat
+```
+
+Это запустит:
+- 📡 Трекер вакансий (мониторинг hh.ru)
+- 🌐 Веб-интерфейс (http://localhost:8000)
+
+---
+
 ### Обычный режим
 
 ```bash
@@ -125,25 +143,25 @@ python main.py --log-level DEBUG
 
 ## 🐳 Docker
 
-### Запуск через docker-compose
+### Запуск через docker-compose (всё сразу)
 
 ```bash
 docker-compose up -d
 ```
 
-### Запуск только трекера
+Это запустит:
+- Трекер вакансий
+- Веб-интерфейс на http://localhost:8000
 
+Просмотр логов:
 ```bash
-docker-compose up -d hh-tracker
+docker-compose logs -f
 ```
 
-### Запуск с веб-интерфейсом
-
+Остановка:
 ```bash
-docker-compose --profile web up -d
+docker-compose down
 ```
-
-Веб-интерфейс будет доступен по адресу: http://localhost:8001
 
 ## 🌐 Веб-интерфейс
 
