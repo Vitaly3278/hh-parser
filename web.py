@@ -96,8 +96,15 @@ async def get_vacancies(
     """Получить список вакансий."""
     vacancies = db.get_all_vacancies()
     total = len(vacancies)
-    paginated = vacancies[offset:offset + limit]
     
+    # Защита от None значений
+    if limit is None:
+        limit = 50
+    if offset is None:
+        offset = 0
+    
+    paginated = vacancies[offset:offset + limit]
+
     return {
         "total": total,
         "limit": limit,
