@@ -2,6 +2,7 @@
 """Веб-интерфейс для управления трекером вакансий."""
 
 import logging
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -241,5 +242,4 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    from datetime import datetime
     uvicorn.run(app, host="0.0.0.0", port=8000)
