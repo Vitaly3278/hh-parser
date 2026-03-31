@@ -3,11 +3,20 @@
 
 echo "🚀 Запуск HH Tracker..."
 
-# Проверка зависимостей
-if ! python3 -c "import fastapi, uvicorn, requests, dotenv" 2>/dev/null; then
-    echo "⚠️ Установка зависимостей..."
-    pip3 install -r requirements.txt
+# Создание виртуального окружения
+if [ ! -d "venv" ]; then
+    echo "📦 Создание виртуального окружения..."
+    python3 -m venv venv
 fi
+
+# Активация
+echo "🔌 Активация виртуального окружения..."
+source venv/bin/activate
+
+# Проверка и установка зависимостей
+echo "📥 Проверка зависимостей..."
+pip install --quiet --upgrade pip
+pip install --quiet -r requirements.txt
 
 # Проверка .env
 if [ ! -f ".env" ]; then
@@ -22,11 +31,11 @@ mkdir -p data logs
 
 # Запуск в фоне
 echo "📡 Запуск трекера вакансий..."
-python3 main.py &
+python main.py &
 TRACKER_PID=$!
 
 echo "🌐 Запуск веб-интерфейса..."
-python3 web.py &
+python web.py &
 WEB_PID=$!
 
 echo ""
