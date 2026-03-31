@@ -14,15 +14,14 @@ sleep 1
 if [ ! -d "venv" ]; then
     echo "📦 Создание venv..."
     python3 -m venv venv
+    echo "📦 Установка зависимостей..."
+    source venv/bin/activate
+    pip install --quiet --upgrade pip
+    pip install --quiet -r requirements.txt
 fi
 
 # Активация
 source venv/bin/activate
-
-# Установка зависимостей
-echo "📦 Установка зависимостей..."
-pip install --quiet --upgrade pip 2>/dev/null
-pip install --quiet -r requirements.txt 2>/dev/null
 
 # Проверка .env
 if [ ! -f ".env" ]; then
