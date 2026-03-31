@@ -98,6 +98,10 @@ class VacancyBot:
             return
             
         chat_id = update.effective_chat.id
+        
+        # Сохраняем chat_id для error_handler
+        if context.user_data is not None:
+            context.user_data['last_chat_id'] = chat_id
 
         if not self.is_authorized(chat_id):
             if update.effective_message:
@@ -367,14 +371,19 @@ class VacancyBot:
             if update.effective_message:
                 await update.effective_message.reply_text("❌ Ошибка при очистке старых вакансий")
 
-    async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def error_handler(self, context: ContextTypes.DEFAULT_TYPE):
         """Обработка ошибок."""
-        logger.error(f"Update {update} caused error: {context.error}")
-        
-        if update and update.effective_message:
-            await update.effective_message.reply_text(
-                "❌ Произошла ошибка при обработке запроса"
-            )
+        logger.error(f"Exception caused error: {context.error}")
+
+        # Попытка отправить сообщение об ошибке пользователю
+        if context.user_data is not None and context.user_data.get('last_chat_id'):
+            try:
+                await context.bot.send_message(
+                    chat_id=context.user_data['last_chat_id'],
+                    text="❌ Произошла ошибка при обработке запроса"
+                )
+            except Exception as e:
+                logger.error(f"Failed to send error message: {e}")
 
     async def post_init(self, application: Application):
         """Инициализация после запуска."""
