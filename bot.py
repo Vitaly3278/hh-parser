@@ -303,8 +303,10 @@ class VacancyBot:
             per_page = 5
             total_pages = (len(vacancies) + per_page - 1) // per_page
 
-            # Ограничиваем страницу
-            page = max(0, min(page, total_pages - 1))
+            # Ограничиваем страницу (защита от None и отрицательных значений)
+            if page is None:
+                page = 0
+            page = max(0, min(page, total_pages - 1)) if total_pages > 0 else 0
             if context.user_data is not None:
                 context.user_data['vacancies_page'] = page
 
