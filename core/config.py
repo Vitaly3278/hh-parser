@@ -60,8 +60,8 @@ CHECK_INTERVAL: int = int(os.getenv('CHECK_INTERVAL', '300'))
 # =============================================================================
 # База данных
 # =============================================================================
-DB_PATH: str = os.getenv('DB_PATH', 'vacancies.db')
-DATA_DIR: str = os.getenv('DATA_DIR', 'data')
+DB_PATH: str = os.getenv('DB_PATH', '/tmp/hh_tracker.db')
+DATA_DIR: str = os.getenv('DATA_DIR', '/tmp')
 
 
 # =============================================================================

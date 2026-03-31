@@ -73,7 +73,7 @@ class Application:
         # Email
         try:
             email = EmailNotifier()
-            if email.test_connection():
+            if await email.test_connection():
                 notifiers.append(email)
                 logger.info("✅ Email подключен")
         except Exception as e:

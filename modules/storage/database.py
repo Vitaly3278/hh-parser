@@ -12,10 +12,9 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
-from sqlalchemy.pool import StaticPool
+from pathlib import Path
 
 from core import DB_PATH, DATA_DIR
-from pathlib import Path
 
 
 Base = declarative_base()
@@ -69,17 +68,21 @@ class Database:
         """
         self.db_path = db_path or DB_PATH
 
-        # Создаём директорию если нужно
+        # Создаём абсолютный путь
         db_file = Path(self.db_path)
         if not db_file.is_absolute():
-            db_file = Path(DATA_DIR) / db_file
-            db_file.parent.mkdir(parents=True, exist_ok=True)
+            # Используем абсолютный путь от корня проекта
+            project_root = Path(__file__).resolve().parent.parent.parent
+            data_dir = project_root / DATA_DIR
+            db_file = data_dir / db_file.name
+
+        # Создаём директорию если нужно
+        db_file.parent.mkdir(parents=True, exist_ok=True)
 
         self.engine = create_engine(
             f'sqlite:///{db_file}',
             echo=False,
             connect_args={'check_same_thread': False},
-            poolclass=StaticPool,
         )
 
         self.SessionLocal = sessionmaker(bind=self.engine)
