@@ -119,6 +119,13 @@ class CommandHandlers:
 
     async def vacancies_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /vacancies."""
+        if not update.effective_message:
+            return
+            
+        if not self.is_authorized(update.effective_chat.id if update.effective_chat else 0):
+            await update.effective_message.reply_text("❌ Доступ запрещён")
+            return
+            
         await self._show_vacancies(update, context, limit=10)
 
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -198,29 +205,16 @@ class CommandHandlers:
             return
 
         try:
-            vacancies = self.repository.get_all()
+            vacancies = self.repository.get_all(limit=limit)
 
             if not vacancies:
                 await update.effective_message.reply_text("📭 В базе нет вакансий")
                 return
 
-            if page is None:
-                chat_id = update.effective_chat.id if update.effective_chat else 0
-                page = self.user_pages.get(chat_id, 0)
+            # Показываем все вакансии в пределах limit (без пагинации для /vacancies)
+            text = f"📋 <b>Последние {len(vacancies)} вакансий</b>\n\n"
 
-            per_page = 5
-            total_pages = (len(vacancies) + per_page - 1) // per_page if vacancies else 1
-
-            # Ограничиваем страницу
-            page = max(0, min(page, total_pages - 1)) if total_pages > 0 else 0
-
-            start = page * per_page
-            end = start + per_page
-            page_vacancies = vacancies[start:end]
-
-            text = f"📋 <b>Вакансии ({start+1}-{min(end, len(vacancies))} из {len(vacancies)})</b>\n\n"
-
-            for i, v in enumerate(page_vacancies, start + 1):
+            for i, v in enumerate(vacancies, 1):
                 salary = ""
                 if v.has_salary():
                     salary = f" | 💰 {v.formatted_salary()}"
@@ -230,13 +224,8 @@ class CommandHandlers:
                 text += f"   📍 {v.area or 'Б/н'}\n"
                 text += f"   🔗 <a href='{v.url or '#'}'>Ссылка</a>\n\n"
 
-            # Добавляем навигацию
-            if page < total_pages - 1:
-                text += f"\n<i>Страница {page + 1} из {total_pages}</i>\n"
-                text += "<i>Используйте /next для следующей страницы</i>"
-            elif page > 0:
-                text += f"\n<i>Страница {page + 1} из {total_pages}</i>\n"
-                text += "<i>Используйте /prev для предыдущей страницы</i>"
+            if len(vacancies) >= limit:
+                text += f"\n<i>Показано {limit} из {self.repository.count()} вакансий</i>\n"
 
             await update.effective_message.reply_text(text, parse_mode="HTML")
 
