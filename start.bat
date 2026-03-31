@@ -1,5 +1,5 @@
 @echo off
-REM Скрипт для запуска трекера вакансий (Windows)
+REM Скрипт для одновременного запуска трекера, бота и веб-интерфейса (Windows)
 
 echo 🚀 Запуск HH Tracker...
 
@@ -19,9 +19,16 @@ if not exist "logs" mkdir logs
 REM Запуск в фоне
 echo 📡 Запуск трекера вакансий...
 start /B python main.py
+echo 🤖 Запуск Telegram бота...
+start /B python bot.py
+echo 🌐 Запуск веб-интерфейса...
+start /B python web.py
 
 echo.
-echo ✅ Запущен трекер вакансий
+echo ✅ Запущено:
+echo    - Трекер вакансий
+echo    - Telegram бот
+echo    - Веб-интерфейс: http://localhost:8000
 echo.
 echo Для остановки закройте окна терминала
 pause

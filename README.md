@@ -33,6 +33,7 @@
 ├── telegram_bot.py      # Telegram уведомления (aiohttp)
 ├── email_bot.py         # Email уведомления
 ├── database.py          # База данных SQLite (SQLAlchemy)
+├── web.py               # Веб-интерфейс (FastAPI)
 ├── config.py            # Конфигурация
 ├── .env                 # Переменные окружения (не в git!)
 ├── .env.example         # Шаблон конфигурации
@@ -128,6 +129,7 @@ start.bat
 Это запустит:
 - 📡 Трекер вакансий (мониторинг hh.ru)
 - 🤖 Telegram бот
+- 🌐 Веб-интерфейс (http://localhost:8000)
 
 ---
 
@@ -181,6 +183,10 @@ python bot.py
 docker-compose up -d
 ```
 
+Это запустит:
+- Трекер вакансий
+- Веб-интерфейс на http://localhost:8000
+
 Просмотр логов:
 ```bash
 docker-compose logs -f
@@ -190,6 +196,31 @@ docker-compose logs -f
 ```bash
 docker-compose down
 ```
+
+## 🌐 Веб-интерфейс
+
+Запустите веб-сервер:
+
+```bash
+python web.py
+```
+
+Откройте http://localhost:8000
+
+**Возможности:**
+- 📊 Просмотр статистики вакансий
+- 📋 Список всех вакансий с фильтрами
+- 🔗 Прямые ссылки на hh.ru
+- 📱 Адаптивный дизайн
+- 🔄 Автообновление каждые 5 минут
+
+**API endpoints:**
+- `GET /` — Главная страница с вакансиями
+- `GET /api/stats` — Статистика
+- `GET /api/vacancies` — Список вакансий
+- `GET /api/vacancies/{id}` — Вакансия по ID
+- `DELETE /api/vacancies/clear?days=30` — Очистить старые
+- `GET /docs` — Swagger документация API
 
 ## 📊 Параметры поиска
 

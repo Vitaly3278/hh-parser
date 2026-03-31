@@ -12,3 +12,19 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
     command: ["python", "main.py"]
+
+  # Веб-интерфейс
+  hh-web:
+    build: .
+    container_name: hh-web-interface
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    command: ["python", "web.py"]
+    depends_on:
+      - hh-tracker
