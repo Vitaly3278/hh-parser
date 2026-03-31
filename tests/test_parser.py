@@ -66,12 +66,6 @@ class TestHHParser(unittest.TestCase):
         self.assertIn("100000 - 200000 RUR", result)
         self.assertIn("Москва", result)
 
-    def test_search_vacancies(self):
-        """Тест поиска вакансий (заглушка)."""
-        # search_vacancies - async метод, требует pytest-asyncio
-        # Этот тест требует отдельной настройки
-        pass
-
-
+    
 if __name__ == "__main__":
     unittest.main()

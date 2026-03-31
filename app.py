@@ -108,7 +108,7 @@ class Application:
                     logger.info(f"Найдено {new_count} новых вакансий")
                     # Отправка уведомлений
                     recent = self.repository.get_recent(hours=1)
-                    for vacancy in recent[-new_count:]:
+                    for vacancy in recent:
                         await self.service.notify_vacancy(vacancy, self.notifiers)
 
                 if once:
