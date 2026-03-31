@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from core import BOT_RATE_LIMIT, BOT_RATE_WINDOW
 from core.exceptions import RateLimitError
@@ -16,8 +16,8 @@ class RateLimiter:
 
     def __init__(
         self,
-        max_requests: int = None,
-        window_seconds: int = None
+        max_requests: Optional[int] = None,
+        window_seconds: Optional[int] = None
     ):
         """
         Инициализация ограничителя.
