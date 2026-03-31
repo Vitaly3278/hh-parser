@@ -32,6 +32,10 @@ echo "📡 Запуск трекера..."
 python main.py >/dev/null 2>&1 &
 TRACKER_PID=$!
 
+echo "🤖 Запуск Telegram бота..."
+python bot.py >/dev/null 2>&1 &
+BOT_PID=$!
+
 echo "🌐 Запуск веб-интерфейса..."
 python web.py >/dev/null 2>&1 &
 WEB_PID=$!
@@ -39,9 +43,10 @@ WEB_PID=$!
 echo ""
 echo "✅ Готово!"
 echo "   Трекер: PID $TRACKER_PID"
+echo "   Бот: PID $BOT_PID"
 echo "   Веб: http://localhost:8000 (PID $WEB_PID)"
 echo ""
 echo "Остановка: Ctrl+C"
 
-trap "kill $TRACKER_PID $WEB_PID 2>/dev/null; exit" INT TERM EXIT
+trap "kill $TRACKER_PID $BOT_PID $WEB_PID 2>/dev/null; exit" INT TERM EXIT
 wait

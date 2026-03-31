@@ -4,6 +4,7 @@
 import logging
 import requests
 from typing import Optional
+from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
@@ -22,38 +23,47 @@ class TelegramBot:
         self.chat_id = chat_id
         self.base_url = f"https://api.telegram.org/bot{token}"
 
-    def send_message(self, message: str, parse_mode: str = "HTML") -> bool:
+    def _make_request(self, method: str, data: dict) -> dict:
+        """Вызов API Telegram."""
+        url = f"{self.base_url}/{method}"
+        try:
+            response = requests.post(url, data=data, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            logger.error(f"Telegram API error: {e}")
+            return {}
+
+    def send_message(self, message: str, parse_mode: str = "HTML", 
+                     reply_markup: Optional[dict] = None) -> bool:
         """
         Отправка текстового сообщения.
 
         :param message: Текст сообщения
         :param parse_mode: Режим парсинга (HTML или Markdown)
+        :param reply_markup: Клавиатура (опционально)
         :return: True если успешно
         """
         if not self.token or not self.chat_id:
             logger.warning("Telegram токен или chat_id не указаны")
             return False
 
-        url = f"{self.base_url}/sendMessage"
         data = {
             "chat_id": self.chat_id,
             "text": message,
             "parse_mode": parse_mode,
             "disable_web_page_preview": False,
         }
+        
+        if reply_markup:
+            data["reply_markup"] = reply_markup
 
-        try:
-            response = requests.post(url, data=data, timeout=10)
-            response.raise_for_status()
-            result = response.json()
-            if result.get("ok"):
-                logger.debug("Сообщение отправлено в Telegram")
-                return True
-            else:
-                logger.error(f"Telegram API вернул ошибку: {result}")
-                return False
-        except requests.RequestException as e:
-            logger.error(f"Ошибка при отправке сообщения в Telegram: {e}")
+        result = self._make_request("sendMessage", data)
+        if result.get("ok"):
+            logger.debug("Сообщение отправлено в Telegram")
+            return True
+        else:
+            logger.error(f"Telegram API вернул ошибку: {result}")
             return False
 
     def send_vacancy(self, vacancy_data: dict) -> bool:
@@ -83,17 +93,107 @@ class TelegramBot:
             elif to_salary:
                 salary_str = f"💰 до {to_salary} {currency}"
 
-        # Формируем сообщение
+        # Формируем сообщение с кнопкой
         message = (
             f"🔔 <b>Новая вакансия!</b>\n\n"
             f"<b>{name}</b>\n"
             f"🏢 {employer}\n"
             f"{salary_str}\n"
             f"📍 {city}\n\n"
-            f"<a href='{url}'>👉 Смотреть вакансию</a>"
         )
 
-        return self.send_message(message)
+        # Кнопка
+        reply_markup = {
+            "inline_keyboard": [[
+                {"text": "👉 Смотреть вакансию", "url": url}
+            ]]
+        }
+
+        return self.send_message(message, reply_markup=reply_markup)
+
+    def send_stats(self, stats: dict) -> bool:
+        """
+        Отправка статистики.
+
+        :param stats: Словарь со статистикой
+        :return: True если успешно
+        """
+        message = (
+            f"📊 <b>Статистика вакансий</b>\n\n"
+            f"Всего в базе: <b>{stats.get('total', 0)}</b>\n"
+            f"За сегодня: <b>{stats.get('today', 0)}</b>\n"
+            f"За неделю: <b>{stats.get('week', 0)}</b>\n"
+        )
+        
+        if stats.get('avg_salary'):
+            message += f"Средняя ЗП: <b>{stats['avg_salary']}</b>\n"
+
+        # Кнопки
+        reply_markup = {
+            "inline_keyboard": [
+                [{"text": "📋 Последние вакансии", "callback_data": "last_10"}],
+                [{"text": "🗑 Очистить старые", "callback_data": "clear_old"}],
+            ]
+        }
+
+        return self.send_message(message, reply_markup=reply_markup)
+
+    def send_vacancies_list(self, vacancies: list, page: int = 0) -> bool:
+        """
+        Отправка списка вакансий.
+
+        :param vacancies: Список вакансий
+        :param page: Номер страницы
+        :return: True если успешно
+        """
+        if not vacancies:
+            return self.send_message("📭 Вакансий не найдено")
+
+        # Показываем по 5 вакансий на странице
+        per_page = 5
+        start = page * per_page
+        end = start + per_page
+        page_vacancies = vacancies[start:end]
+        total_pages = (len(vacancies) + per_page - 1) // per_page
+
+        message = f"📋 <b>Вакансии ({start+1}-{min(end, len(vacancies))} из {len(vacancies)})</b>\n\n"
+
+        for i, v in enumerate(page_vacancies, start):
+            salary = ""
+            if v.get('salary_from') or v.get('salary_to'):
+                from_s = v.get('salary_from', '')
+                to_s = v.get('salary_to', '')
+                curr = v.get('currency', 'RUR')
+                if from_s and to_s:
+                    salary = f" | 💰 {from_s}-{to_s} {curr}"
+                elif from_s:
+                    salary = f" | 💰 от {from_s} {curr}"
+                elif to_s:
+                    salary = f" | 💰 до {to_s} {curr}"
+
+            message += f"{i}. <b>{v.get('name', 'Б/н')}</b>\n"
+            message += f"   🏢 {v.get('employer', 'Б/н')}{salary}\n"
+            message += f"   📍 {v.get('area', 'Б/н')}\n"
+            message += f"   🔗 <a href='{v.get('url', '#)}'>Ссылка</a>\n\n"
+
+        # Кнопки навигации
+        keyboard = []
+        nav_row = []
+        
+        if page > 0:
+            nav_row.append({"text": "⬅️ Назад", "callback_data": f"page_{page-1}"})
+        
+        if page < total_pages - 1:
+            nav_row.append({"text": "Вперёд ➡️", "callback_data": f"page_{page+1}"})
+        
+        if nav_row:
+            keyboard.append(nav_row)
+        
+        keyboard.append([{"text": "🔙 В меню", "callback_data": "menu"}])
+
+        reply_markup = {"inline_keyboard": keyboard} if keyboard else None
+
+        return self.send_message(message, reply_markup=reply_markup)
 
     def test_connection(self) -> bool:
         """
@@ -102,4 +202,16 @@ class TelegramBot:
         :return: True если соединение успешно
         """
         logger.info("Проверка соединения с Telegram...")
-        return self.send_message("✅ Бот подключен и готов к работе!")
+        
+        # Кнопка для теста
+        reply_markup = {
+            "inline_keyboard": [
+                [{"text": "✅ Работает!", "callback_data": "test_ok"}]
+            ]
+        }
+        
+        return self.send_message(
+            "✅ <b>HH Tracker подключен!</b>\n\n"
+            "Бот готов к работе и отправке уведомлений.",
+            reply_markup=reply_markup
+        )
