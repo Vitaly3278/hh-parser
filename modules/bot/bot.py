@@ -14,6 +14,7 @@ from core import TELEGRAM_BOT_TOKEN
 from core.exceptions import ConfigError
 from modules.bot.handlers import CommandHandlers
 from modules.bot.rate_limiter import RateLimiter
+from modules.storage.repository import VacancyRepository
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class TelegramBot:
     def __init__(
         self,
         token: Optional[str] = None,
-        repository=None,
+        repository: Optional[VacancyRepository] = None,
         allowed_chat_ids: Optional[list] = None
     ):
         """
@@ -36,7 +37,7 @@ class TelegramBot:
         :param allowed_chat_ids: Разрешённые chat_id
         """
         self.token = token or TELEGRAM_BOT_TOKEN
-        self.repository = repository
+        self.repository: Optional[VacancyRepository] = repository
         self.allowed_chat_ids = allowed_chat_ids
 
         if not self.token:
