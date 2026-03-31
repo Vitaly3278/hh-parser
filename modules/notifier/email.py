@@ -105,7 +105,7 @@ class EmailNotifier(AbstractNotifier):
             logger.error(f"Ошибка при отправке Email: {e}")
             return False
 
-    def send_vacancy(self, vacancy: Vacancy) -> bool:
+    async def send_vacancy(self, vacancy: Vacancy) -> bool:
         """
         Отправить уведомление о вакансии.
 
@@ -142,7 +142,7 @@ class EmailNotifier(AbstractNotifier):
         subject = f"Новая вакансия: {vacancy.name}"
         return self.send(text_body, subject=subject, html=False)
 
-    def send_stats(self, stats: Dict[str, Any]) -> bool:
+    async def send_stats(self, stats: Dict[str, Any]) -> bool:
         """
         Отправить статистику.
 
@@ -162,7 +162,7 @@ class EmailNotifier(AbstractNotifier):
 
         return self.send(message, subject="Статистика вакансий", html=False)
 
-    def test_connection(self) -> bool:
+    async def test_connection(self) -> bool:
         """
         Проверка соединения с SMTP.
 
