@@ -1,10 +1,10 @@
-"""Unit тесты для модуля hh_parser.py."""
+"""Unit тесты для модуля parser."""
 
 import pytest
 import aiohttp
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from modules.parser.hh_client import HHParser
+from modules.parser.hh_client import HHClient
 
 
 @pytest.fixture
@@ -17,8 +17,8 @@ async def http_session():
 
 @pytest.fixture
 def parser(http_session):
-    """Фикстура для HHParser."""
-    return HHParser(area="1", session=http_session)
+    """Фикстура для HHClient."""
+    return HHClient(area="1", session=http_session)
 
 
 @pytest.fixture
