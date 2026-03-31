@@ -1,47 +1,96 @@
 #!/usr/bin/env python3
-"""Модуль для отправки уведомлений в Telegram."""
+"""Асинхронный модуль для отправки уведомлений в Telegram на aiohttp."""
 
 import logging
-import requests
 from typing import Optional
-from urllib.parse import quote
+
+import aiohttp
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 logger = logging.getLogger(__name__)
 
 
-class TelegramBot:
-    """Бот для отправки сообщений в Telegram."""
+class TelegramError(Exception):
+    """Исключение для ошибок Telegram API."""
+    pass
 
-    def __init__(self, token: str, chat_id: str):
+
+class TelegramBot:
+    """Асинхронный бот для отправки сообщений в Telegram."""
+
+    def __init__(self, token: str, chat_id: str, session: Optional[aiohttp.ClientSession] = None):
         """
         Инициализация бота.
 
         :param token: Токен бота от @BotFather
         :param chat_id: ID чата для отправки сообщений
+        :param session: aiohttp сессия (опционально)
         """
         self.token = token
         self.chat_id = chat_id
         self.base_url = f"https://api.telegram.org/bot{token}"
+        self._session = session
+        self._owned_session = False
 
-    def _make_request(self, method: str, data: dict) -> dict:
-        """Вызов API Telegram."""
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Получение или создание сессии."""
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+            self._owned_session = True
+        return self._session
+
+    async def close(self):
+        """Закрытие сессии."""
+        if self._owned_session and self._session:
+            await self._session.close()
+            self._session = None
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((aiohttp.ClientError, TelegramError)),
+        reraise=True
+    )
+    async def _make_request(self, method: str, data: dict) -> dict:
+        """
+        Вызов API Telegram с retry логикой.
+
+        :param method: Метод API
+        :param data: Данные запроса
+        :return: Результат запроса
+        """
+        session = await self._get_session()
         url = f"{self.base_url}/{method}"
+        
         try:
-            response = requests.post(url, data=data, timeout=10)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            logger.error(f"Telegram API error: {e}")
-            return {}
+            async with session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                result = await response.json()
+                
+                if not result.get("ok"):
+                    error_desc = result.get("description", "Unknown error")
+                    raise TelegramError(f"Telegram API error: {error_desc}")
+                
+                return result
+                
+        except aiohttp.ClientError as e:
+            logger.warning(f"Client error, will retry: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            raise TelegramError(f"Unexpected error: {e}")
 
-    def send_message(self, message: str, parse_mode: str = "HTML", 
-                     reply_markup: Optional[dict] = None) -> bool:
+    async def send_message(
+        self,
+        message: str,
+        parse_mode: str = "HTML",
+        disable_web_page_preview: bool = False
+    ) -> bool:
         """
         Отправка текстового сообщения.
 
         :param message: Текст сообщения
         :param parse_mode: Режим парсинга (HTML или Markdown)
-        :param reply_markup: Клавиатура (опционально)
+        :param disable_web_page_preview: Отключить предпросмотр ссылок
         :return: True если успешно
         """
         if not self.token or not self.chat_id:
@@ -52,21 +101,25 @@ class TelegramBot:
             "chat_id": self.chat_id,
             "text": message,
             "parse_mode": parse_mode,
-            "disable_web_page_preview": False,
+            "disable_web_page_preview": disable_web_page_preview,
         }
-        
-        if reply_markup:
-            data["reply_markup"] = reply_markup
 
-        result = self._make_request("sendMessage", data)
-        if result.get("ok"):
+        try:
+            result = await self._make_request("sendMessage", data)
             logger.debug("Сообщение отправлено в Telegram")
             return True
-        else:
-            logger.error(f"Telegram API вернул ошибку: {result}")
-            return False
+        except TelegramError as e:
+            # Пробуем отправить без parse_mode
+            logger.debug(f"Повторная отправка без {parse_mode}...")
+            data["parse_mode"] = None
+            try:
+                result = await self._make_request("sendMessage", data)
+                return True
+            except TelegramError as e:
+                logger.error(f"Не удалось отправить сообщение: {e}")
+                return False
 
-    def send_vacancy(self, vacancy_data: dict) -> bool:
+    async def send_vacancy(self, vacancy_data: dict) -> bool:
         """
         Отправка информации о вакансии.
 
@@ -102,9 +155,9 @@ class TelegramBot:
             f"🔗 <a href='{url}'>Ссылка на вакансию</a>"
         )
 
-        return self.send_message(message)
+        return await self.send_message(message)
 
-    def send_stats(self, stats: dict) -> bool:
+    async def send_stats(self, stats: dict) -> bool:
         """
         Отправка статистики.
 
@@ -121,9 +174,9 @@ class TelegramBot:
         if stats.get('avg_salary'):
             message += f"Средняя ЗП: <b>{stats['avg_salary']}</b>\n"
 
-        return self.send_message(message)
+        return await self.send_message(message)
 
-    def send_vacancies_list(self, vacancies: list, page: int = 0) -> bool:
+    async def send_vacancies_list(self, vacancies: list, page: int = 0) -> bool:
         """
         Отправка списка вакансий.
 
@@ -132,14 +185,12 @@ class TelegramBot:
         :return: True если успешно
         """
         if not vacancies:
-            return self.send_message("📭 Вакансий не найдено")
+            return await self.send_message("📭 Вакансий не найдено")
 
-        # Показываем по 5 вакансий на странице
         per_page = 5
         start = page * per_page
         end = start + per_page
         page_vacancies = vacancies[start:end]
-        total_pages = (len(vacancies) + per_page - 1) // per_page
 
         message = f"📋 <b>Вакансии ({start+1}-{min(end, len(vacancies))} из {len(vacancies)})</b>\n\n"
 
@@ -161,16 +212,20 @@ class TelegramBot:
             message += f"   📍 {v.get('area', 'Б/н')}\n"
             message += f"   🔗 <a href='{v.get('url', '#')}'>Ссылка</a>\n\n"
 
-        return self.send_message(message)
+        return await self.send_message(message)
 
-    def test_connection(self) -> bool:
+    async def test_connection(self) -> bool:
         """
         Проверка соединения с Telegram API.
 
         :return: True если соединение успешно
         """
         logger.info("Проверка соединения с Telegram...")
-        return self.send_message(
-            "✅ <b>HH Tracker подключен!</b>\n\n"
-            "Бот готов к работе и отправке уведомлений."
-        )
+        try:
+            return await self.send_message(
+                "✅ <b>HH Tracker подключен!</b>\n\n"
+                "Бот готов к работе и отправке уведомлений."
+            )
+        except Exception as e:
+            logger.error(f"Ошибка подключения к Telegram: {e}")
+            return False

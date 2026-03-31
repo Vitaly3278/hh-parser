@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
-"""Модуль для отправки уведомлений в Slack."""
+"""Асинхронный модуль для отправки уведомлений в Slack на aiohttp."""
 
 import logging
-import requests
 from typing import Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
 
 class SlackBot:
-    """Бот для отправки сообщений в Slack."""
+    """Асинхронный бот для отправки сообщений в Slack."""
 
-    def __init__(self, webhook_url: str):
+    def __init__(self, webhook_url: str, session: Optional[aiohttp.ClientSession] = None):
         """
         Инициализация бота.
 
         :param webhook_url: URL вебхука от Slack
+        :param session: aiohttp сессия (опционально)
         """
         self.webhook_url = webhook_url
+        self._session = session
 
-    def send_message(self, message: str, blocks: Optional[list] = None) -> bool:
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Получение или создание сессии."""
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def send_message(self, message: str, blocks: Optional[list] = None) -> bool:
         """
         Отправка сообщения.
 
@@ -35,22 +44,28 @@ class SlackBot:
         if blocks:
             payload["blocks"] = blocks
 
+        session = await self._get_session()
+
         try:
-            response = requests.post(self.webhook_url, json=payload, timeout=10)
-            response.raise_for_status()
+            async with session.post(self.webhook_url, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                response.raise_for_status()
+                result = await response.text()
 
-            if response.text == "ok":
-                logger.debug("Сообщение отправлено в Slack")
-                return True
-            else:
-                logger.error(f"Slack вернул ошибку: {response.text}")
-                return False
+                if result == "ok":
+                    logger.debug("Сообщение отправлено в Slack")
+                    return True
+                else:
+                    logger.error(f"Slack вернул ошибку: {result}")
+                    return False
 
-        except requests.RequestException as e:
+        except aiohttp.ClientError as e:
             logger.error(f"Ошибка при отправке сообщения в Slack: {e}")
             return False
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при отправке в Slack: {e}")
+            return False
 
-    def send_vacancy(self, vacancy_data: dict) -> bool:
+    async def send_vacancy(self, vacancy_data: dict) -> bool:
         """
         Отправка информации о вакансии.
 
@@ -111,13 +126,13 @@ class SlackBot:
         ]
 
         message = f"🔔 Новая вакансия: {name} в {employer}"
-        return self.send_message(message, blocks)
+        return await self.send_message(message, blocks)
 
-    def test_connection(self) -> bool:
+    async def test_connection(self) -> bool:
         """
         Проверка соединения с Slack.
 
         :return: True если соединение успешно
         """
         logger.info("Проверка соединения с Slack...")
-        return self.send_message("✅ HH Tracker подключен и готов к работе!")
+        return await self.send_message("✅ HH Tracker подключен и готов к работе!")

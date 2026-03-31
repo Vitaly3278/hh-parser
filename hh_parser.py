@@ -1,31 +1,40 @@
 #!/usr/bin/env python3
-"""Модуль для работы с API hh.ru."""
+"""Асинхронный парсер вакансий с hh.ru на aiohttp."""
 
 import logging
-import requests
 from datetime import datetime
 from typing import Optional, List
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
 
 class HHParser:
-    """Парсер вакансий с hh.ru."""
+    """Асинхронный парсер вакансий с hh.ru."""
 
     BASE_URL = "https://api.hh.ru/vacancies"
     USER_AGENT = "Mozilla/5.0 (compatible; HH.ru API client)"
 
-    def __init__(self, area: Optional[str] = None, period: int = 1):
+    def __init__(self, area: Optional[str] = None, period: int = 1, session: Optional[aiohttp.ClientSession] = None):
         """
         Инициализация парсера.
 
         :param area: ID региона (например, '1' для Москвы, '2' для СПб)
-        :param period: Период поиска в днях (для фильтрации по дате публикации)
+        :param period: Период поиска в днях
+        :param session: aiohttp сессия (опционально)
         """
         self.area = area
         self.period = period
+        self._session = session
 
-    def search_vacancies(
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Получение или создание сессии."""
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def search_vacancies(
         self,
         search_text: str,
         page: int = 0,
@@ -37,12 +46,12 @@ class HHParser:
         """
         Поиск вакансий.
 
-        :param search_text: Поисковый запрос (название вакансии)
+        :param search_text: Поисковый запрос
         :param page: Номер страницы
         :param per_page: Количество вакансий на странице (макс. 20)
         :param salary_from: Минимальная зарплата
-        :param employment: Тип занятости (например, ['full', 'part'])
-        :param experience: Опыт работы (например, ['noExperience', 'between1And3'])
+        :param employment: Тип занятости
+        :param experience: Опыт работы
         :return: Словарь с данными о вакансиях
         """
         params = {
@@ -58,25 +67,29 @@ class HHParser:
             params["salary"] = salary_from
 
         if employment:
-            params["employment"] = employment
+            params["employment"] = ",".join(employment)
 
         if experience:
-            params["experience"] = experience
+            params["experience"] = ",".join(experience)
 
         headers = {"User-Agent": self.USER_AGENT}
+        session = await self._get_session()
 
         try:
             logger.debug(f"Запрос к hh.ru: {params}")
-            response = requests.get(self.BASE_URL, params=params, headers=headers, timeout=10)
-            response.raise_for_status()
-            result = response.json()
-            logger.info(f"Найдено вакансий: {result.get('found', 0)}")
-            return result
-        except requests.RequestException as e:
+            async with session.get(self.BASE_URL, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                response.raise_for_status()
+                result = await response.json()
+                logger.info(f"Найдено вакансий: {result.get('found', 0)}")
+                return result
+        except aiohttp.ClientError as e:
             logger.error(f"Ошибка при запросе к hh.ru: {e}")
             return {"items": [], "found": 0}
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при запросе к hh.ru: {e}")
+            return {"items": [], "found": 0}
 
-    def get_vacancy_details(self, vacancy_id: str) -> Optional[dict]:
+    async def get_vacancy_details(self, vacancy_id: str) -> Optional[dict]:
         """
         Получение подробной информации о вакансии.
 
@@ -85,13 +98,17 @@ class HHParser:
         """
         url = f"https://api.hh.ru/vacancies/{vacancy_id}"
         headers = {"User-Agent": self.USER_AGENT}
+        session = await self._get_session()
 
         try:
-            response = requests.get(url, headers=headers, timeout=10)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                response.raise_for_status()
+                return await response.json()
+        except aiohttp.ClientError as e:
             logger.error(f"Ошибка при получении деталей вакансии: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при получении деталей: {e}")
             return None
 
     def filter_by_date(self, vacancies: list, hours: int = 24) -> list:

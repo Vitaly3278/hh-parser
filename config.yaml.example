@@ -1,0 +1,53 @@
+# HH Tracker Configuration
+# Этот файл используется как альтернатива .env
+
+# Telegram настройки
+telegram:
+  bot_token: "${TELEGRAM_BOT_TOKEN}"  # Можно использовать переменные окружения
+  chat_id: "${TELEGRAM_CHAT_ID}"
+  allowed_chat_ids: []  # Список разрешённых chat_id
+
+# Email уведомления
+email:
+  enabled: false
+  host: smtp.gmail.com
+  port: 587
+  user: "${EMAIL_USER}"
+  password: "${EMAIL_PASSWORD}"
+  recipient: "${EMAIL_RECIPIENT}"
+  use_tls: true
+
+# Slack уведомления
+slack:
+  enabled: false
+  webhook_url: "${SLACK_WEBHOOK_URL}"
+
+# HH.ru параметры поиска
+hh:
+  search_text: "Python разработчик"
+  area: ""  # ID региона (1=Москва, 2=СПб)
+  salary_from: null
+  employment: []  # full, part, project, probation
+  experience: []  # noExperience, between1And3, between3And6, moreThan6
+  exclude_words:
+    - стажировка
+    - test
+
+# Интервал проверки (секунды)
+check_interval: 300
+
+# База данных
+database:
+  path: vacancies.db
+
+# Логирование
+logging:
+  level: INFO
+  file: hh_tracker.log
+  max_bytes: 10485760  # 10 MB
+  backup_count: 5
+
+# Rate limiting для бота
+rate_limiting:
+  max_requests: 10
+  window_seconds: 60

@@ -24,6 +24,7 @@ def parse_optional(value: str, type_func=None):
 # Telegram (обязательно)
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
+ALLOWED_CHAT_IDS = parse_list(os.getenv('ALLOWED_CHAT_IDS', ''))  # Список разрешённых chat_id
 
 # Email уведомления (опционально)
 EMAIL_ENABLED = os.getenv('EMAIL_ENABLED', 'false').lower() == 'true'
