@@ -48,8 +48,25 @@ class VacancyBot:
             response = requests.post(url, data=data, timeout=30)
             response.raise_for_status()
             result = response.json()
-            logger.debug(f"{method}: {result}")
+            
+            # Обработка 409 Conflict
+            if not result.get("ok") and "Conflict" in str(result):
+                logger.warning("⚠️ Конфликт! Другой экземпляр бота уже запущен.")
+                logger.warning("Пытаюсь освободить webhook...")
+                self._make_request("deleteWebhook", {})
+            
             return result
+        except requests.exceptions.HTTPError as e:
+            if "409" in str(e):
+                logger.warning("⚠️ 409 Conflict - другой экземпляр бота работает")
+                # Пытаемся удалить webhook
+                try:
+                    requests.post(f"{self.base_url}/deleteWebhook", timeout=5)
+                    logger.info("Webhook удалён, пробуем снова...")
+                except:
+                    pass
+            logger.error(f"API error: {e}")
+            return {}
         except Exception as e:
             logger.error(f"API error: {e}")
             return {}
@@ -256,6 +273,10 @@ class VacancyBot:
     def run(self):
         """Запуск бота."""
         logger.info("🤖 Запуск HH Tracker Bot...")
+        
+        # Удаляем webhook (может вызывать 409 конфликт)
+        logger.debug("Удаление webhook...")
+        self._make_request("deleteWebhook", {})
         
         # Проверка подключения
         result = self._make_request("getMe", {})
