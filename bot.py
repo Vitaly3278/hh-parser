@@ -413,8 +413,8 @@ class VacancyBot:
         self.application.add_handler(CommandHandler("prev", self.prev_command))
         self.application.add_handler(CommandHandler("clear_old", self.clear_old_command))
 
-        # Обработчик ошибок
-        self.application.add_error_handler(self.error_handler)
+        # Обработчик ошибок (используем lambda для избежания проблем с bound method)
+        self.application.add_error_handler(lambda context: self.error_handler(context))
 
         # Запуск
         logger.info("Ожидание сообщений...")
