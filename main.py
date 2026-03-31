@@ -30,7 +30,9 @@ class VacancyTracker:
 
     def __init__(self):
         """Инициализация трекера."""
-        self.parser = HHParser(area=HH_AREA)
+        # Преобразуем строку "None" в None
+        area = HH_AREA if HH_AREA and HH_AREA != "None" else None
+        self.parser = HHParser(area=area)
         self.bot = TelegramBot(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
         self.db = VacancyDatabase(DB_PATH)
         self.running = True
