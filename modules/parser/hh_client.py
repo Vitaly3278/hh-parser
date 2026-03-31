@@ -146,6 +146,43 @@ class HHClient:
             published_at=data.get("published_at"),
         )
 
+    def format_vacancy(self, vacancy: Dict[str, Any]) -> str:
+        """
+        Форматирование вакансии в строку.
+
+        :param vacancy: Данные вакансии (словарь)
+        :return: Форматированная строка
+        """
+        name = vacancy.get("name", "Без названия")
+        employer = vacancy.get("employer", {}).get("name", "Не указан") if vacancy.get("employer") else "Не указан"
+        salary = vacancy.get("salary", {})
+        salary_str = "Не указана"
+
+        if salary:
+            from_salary = salary.get("from")
+            to_salary = salary.get("to")
+            currency = salary.get("currency", "RUR")
+
+            if from_salary and to_salary:
+                salary_str = f"{from_salary} - {to_salary} {currency}"
+            elif from_salary:
+                salary_str = f"от {from_salary} {currency}"
+            elif to_salary:
+                salary_str = f"до {to_salary} {currency}"
+
+        city = vacancy.get("area", {}).get("name", "Не указан") if vacancy.get("area") else "Не указан"
+        url = vacancy.get("alternate_url", vacancy.get("url", ""))
+        published_at = vacancy.get("published_at", "")
+
+        return (
+            f"💼 **{name}**\n"
+            f"🏢 {employer}\n"
+            f"💰 {salary_str}\n"
+            f"📍 {city}\n"
+            f"🔗 {url}\n"
+            f"📅 Опубликовано: {published_at}"
+        )
+
     async def close(self):
         """Закрытие сессии."""
         if self._session and hasattr(self._session, 'close'):
