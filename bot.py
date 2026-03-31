@@ -97,7 +97,8 @@ class VacancyBot:
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         message = (
@@ -114,7 +115,8 @@ class VacancyBot:
             "/next - Следующая страница вакансий\n"
             "/prev - Предыдущая страница"
         )
-        await update.effective_message.reply_text(message, parse_mode="HTML")
+        if update.effective_message:
+            await update.effective_message.reply_text(message, parse_mode="HTML")
         await self.show_vacancies(update, context, limit=10)
 
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -122,31 +124,36 @@ class VacancyBot:
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         if not self.rate_limiter.is_allowed(chat_id):
             wait = self.rate_limiter.get_wait_time(chat_id)
-            await update.effective_message.reply_text(
-                f"⏳ Слишком много запросов. Подождите {wait:.0f} сек."
-            )
+            if update.effective_message:
+                await update.effective_message.reply_text(
+                    f"⏳ Слишком много запросов. Подождите {wait:.0f} сек."
+                )
             return
 
-        await self._show_stats(update.effective_message)
+        if update.effective_message:
+            await self._show_stats(update.effective_message)
 
     async def vacancies_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /vacancies."""
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         if not self.rate_limiter.is_allowed(chat_id):
             wait = self.rate_limiter.get_wait_time(chat_id)
-            await update.effective_message.reply_text(
-                f"⏳ Слишком много запросов. Подождите {wait:.0f} сек."
-            )
+            if update.effective_message:
+                await update.effective_message.reply_text(
+                    f"⏳ Слишком много запросов. Подождите {wait:.0f} сек."
+                )
             return
 
         await self.show_vacancies(update, context, limit=10)
@@ -156,7 +163,8 @@ class VacancyBot:
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         message = (
@@ -169,14 +177,16 @@ class VacancyBot:
             "/prev - Предыдущая страница\n"
             "/help - Помощь"
         )
-        await update.effective_message.reply_text(message, parse_mode="HTML")
+        if update.effective_message:
+            await update.effective_message.reply_text(message, parse_mode="HTML")
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /help."""
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         message = (
@@ -193,14 +203,16 @@ class VacancyBot:
             "• Максимум 10 запросов в минуту\n"
             "• Доступ только для авторизованных пользователей"
         )
-        await update.effective_message.reply_text(message, parse_mode="HTML")
+        if update.effective_message:
+            await update.effective_message.reply_text(message, parse_mode="HTML")
 
     async def next_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /next."""
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         # Получаем текущую страницу из context
@@ -214,7 +226,8 @@ class VacancyBot:
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         current_page = max(0, context.user_data.get('vacancies_page', 0) - 1)
@@ -308,18 +321,21 @@ class VacancyBot:
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
-            await update.effective_message.reply_text("❌ Доступ запрещён")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
         try:
             deleted = self.db.clear_old_vacancies(days=30)
-            await update.effective_message.reply_text(
-                f"🗑 Удалено старых вакансий: <b>{deleted}</b>",
-                parse_mode="HTML"
-            )
+            if update.effective_message:
+                await update.effective_message.reply_text(
+                    f"🗑 Удалено старых вакансий: <b>{deleted}</b>",
+                    parse_mode="HTML"
+                )
         except Exception as e:
             logger.error(f"Ошибка при очистке: {e}")
-            await update.effective_message.reply_text("❌ Ошибка при очистке старых вакансий")
+            if update.effective_message:
+                await update.effective_message.reply_text("❌ Ошибка при очистке старых вакансий")
 
     async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка ошибок."""
