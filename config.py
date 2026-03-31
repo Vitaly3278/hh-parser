@@ -1,8 +1,11 @@
 """Конфигурация приложения."""
 
-# Telegram
-TELEGRAM_BOT_TOKEN = "8731932315:AAE4iZxEx8cEX_WGn5LeLtQVVLnAnXBeT2I"  # Токен от @BotFather
-TELEGRAM_CHAT_ID = "388770105"  # ID чата для уведомлений
+# Импорт локальных секретов (токен, chat_id)
+try:
+    from config_local import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+except ImportError:
+    TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
+    TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE"
 
 # HH.ru параметры поиска
 HH_SEARCH_TEXT = "Python"  # Поисковый запрос
