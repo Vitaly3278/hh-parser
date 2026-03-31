@@ -10,6 +10,7 @@
 ├── telegram_bot.py   # Модуль отправки уведомлений
 ├── database.py       # Модуль базы данных
 ├── config.py         # Файл конфигурации
+├── config_local.py   # Локальные секреты (не в git!)
 ├── requirements.txt  # Зависимости
 └── README.md         # Документация
 ```
@@ -27,12 +28,16 @@
    - Узнайте свой chat_id через [@userinfobot](https://t.me/userinfobot)
    - Напишите боту любое сообщение
 
-3. **Отредактируйте `config.py`:**
+3. **Создайте файл `config_local.py`:**
    ```python
    TELEGRAM_BOT_TOKEN = "ваш_токен"
    TELEGRAM_CHAT_ID = "ваш_chat_id"
+   ```
+
+4. **Настройте поиск в `config.py`:**
+   ```python
    HH_SEARCH_TEXT = "Python разработчик"  # Ваш запрос
-   HH_AREA = "1"  # 1=Москва, 2=СПб, None=все регионы
+   HH_AREA = None  # 1=Москва, 2=СПб, 104=Россия, None=все
    CHECK_INTERVAL = 300  # Интервал проверки (сек)
    ```
 
