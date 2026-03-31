@@ -16,9 +16,8 @@ class TestHHParser(unittest.TestCase):
 
     def test_init(self):
         """Тест инициализации."""
-        parser = HHClient(area="1", period=7)
+        parser = HHClient(area="1")
         self.assertEqual(parser.area, "1")
-        self.assertEqual(parser.period, 7)
 
     def test_filter_by_exclude_words_empty(self):
         """Тест фильтрации с пустым списком исключений."""
