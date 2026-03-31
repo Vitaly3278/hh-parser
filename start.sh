@@ -1,8 +1,11 @@
 #!/bin/bash
 # Скрипт для одновременного запуска трекера и веб-интерфейса
 
+echo "🚀 Запуск HH Tracker..."
+
 # Создание виртуального окружения
 if [ ! -d "venv" ]; then
+    echo "📦 Создание venv..."
     python3 -m venv venv 2>/dev/null
 fi
 
@@ -10,6 +13,7 @@ fi
 source venv/bin/activate
 
 # Установка зависимостей
+echo "📦 Установка зависимостей..."
 pip install --quiet --upgrade pip 2>/dev/null
 pip install --quiet -r requirements.txt 2>/dev/null
 
@@ -24,13 +28,20 @@ fi
 mkdir -p data logs 2>/dev/null
 
 # Запуск
+echo "📡 Запуск трекера..."
 python main.py >/dev/null 2>&1 &
 TRACKER_PID=$!
 
+echo "🌐 Запуск веб-интерфейса..."
 python web.py >/dev/null 2>&1 &
 WEB_PID=$!
 
-echo "✅ Запущено: трекер (PID:$TRACKER_PID), веб http://localhost:8000 (PID:$WEB_PID)"
+echo ""
+echo "✅ Готово!"
+echo "   Трекер: PID $TRACKER_PID"
+echo "   Веб: http://localhost:8000 (PID $WEB_PID)"
+echo ""
+echo "Остановка: Ctrl+C"
 
 trap "kill $TRACKER_PID $WEB_PID 2>/dev/null; exit" INT TERM EXIT
 wait
