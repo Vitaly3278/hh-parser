@@ -25,20 +25,20 @@ async def load_initial_vacancies(repository, http_session):
     # Проверяем есть ли вакансии в базе
     count = repository.count()
     if count > 0:
-        logger.info(f"В базе уже есть {count} вакансий")
+        logger.info(f"✅ В базе уже есть {count} вакансий")
         return 0
 
     # Загружаем с hh.ru
-    logger.info("База пуста. Загрузка вакансий с hh.ru...")
-    
+    logger.info("📥 База пуста. Загрузка вакансий с hh.ru...")
+
     service = VacancyService(repository=repository, http_session=http_session)
     new_count = await service.check_vacancies()
-    
+
     if new_count > 0:
-        logger.info(f"Загружено {new_count} вакансий")
+        logger.info(f"✅ Загружено {new_count} вакансий")
     else:
-        logger.warning("Не удалось загрузить вакансии")
-    
+        logger.warning("⚠️ Не удалось загрузить вакансии")
+
     return new_count
 
 

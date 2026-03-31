@@ -53,6 +53,9 @@ class Application:
             http_session=self.http_session
         )
 
+        # Загрузка начальных вакансий если база пустая
+        await self._load_initial_vacancies()
+
         # Нотификаторы
         self.notifiers = await self._create_notifiers()
 
@@ -63,6 +66,21 @@ class Application:
         self.web_app = create_web_app(self.repository)
 
         logger.info("✅ Приложение инициализировано")
+
+    async def _load_initial_vacancies(self):
+        """Загрузка начальных вакансий если база пустая."""
+        count = self.repository.count()
+        if count > 0:
+            logger.info(f"✅ В базе уже есть {count} вакансий")
+            return
+
+        logger.info("📥 База пуста. Загрузка вакансий с hh.ru...")
+        new_count = await self.service.check_vacancies()
+
+        if new_count > 0:
+            logger.info(f"✅ Загружено {new_count} вакансий в базу")
+        else:
+            logger.warning("⚠️ Не удалось загрузить вакансии")
 
     async def _create_notifiers(self) -> List[AbstractNotifier]:
         """Создание нотификаторов."""
