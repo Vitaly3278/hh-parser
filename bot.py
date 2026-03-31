@@ -387,6 +387,10 @@ class VacancyBot:
             except Exception as e:
                 logger.error(f"Failed to send error message: {e}")
 
+    async def _error_handler_wrapper(self, context: ContextTypes.DEFAULT_TYPE):
+        """Обертка для error_handler."""
+        await self.error_handler(context)
+
     async def post_init(self, application: Application):
         """Инициализация после запуска."""
         logger.info("✅ Бот инициализирован")
@@ -413,8 +417,8 @@ class VacancyBot:
         self.application.add_handler(CommandHandler("prev", self.prev_command))
         self.application.add_handler(CommandHandler("clear_old", self.clear_old_command))
 
-        # Обработчик ошибок (используем lambda для избежания проблем с bound method)
-        self.application.add_error_handler(lambda context: self.error_handler(context))
+        # Обработчик ошибок
+        self.application.add_error_handler(self._error_handler_wrapper)
 
         # Запуск
         logger.info("Ожидание сообщений...")
