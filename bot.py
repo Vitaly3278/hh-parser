@@ -94,6 +94,9 @@ class VacancyBot:
 
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /start."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -121,6 +124,9 @@ class VacancyBot:
 
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /stats."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -141,6 +147,9 @@ class VacancyBot:
 
     async def vacancies_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /vacancies."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -160,6 +169,9 @@ class VacancyBot:
 
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /menu."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -182,6 +194,9 @@ class VacancyBot:
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /help."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -208,6 +223,9 @@ class VacancyBot:
 
     async def next_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /next."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -224,6 +242,9 @@ class VacancyBot:
 
     async def prev_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /prev."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
@@ -324,6 +345,9 @@ class VacancyBot:
 
     async def clear_old_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Очистка старых вакансий."""
+        if not update.effective_chat:
+            return
+            
         chat_id = update.effective_chat.id
 
         if not self.is_authorized(chat_id):
