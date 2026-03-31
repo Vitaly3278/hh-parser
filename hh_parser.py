@@ -10,7 +10,7 @@ class HHParser:
     """Парсер вакансий с hh.ru."""
 
     BASE_URL = "https://api.hh.ru/vacancies"
-    USER_AGENT = "hh vacancy tracker (your_email@example.com)"
+    USER_AGENT = "Mozilla/5.0 (compatible; HH.ru API client)"
 
     def __init__(self, area: Optional[str] = None, period: int = 1):
         """
