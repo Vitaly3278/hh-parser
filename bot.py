@@ -120,14 +120,7 @@ class VacancyBot:
 
     def get_menu_keyboard(self):
         """Главное меню."""
-        return {
-            "inline_keyboard": [
-                [{"text": "📊 Статистика", "callback_data": "stats"}],
-                [{"text": "📋 Последние вакансии", "callback_data": "last_10"}],
-                [{"text": "🔍 Все вакансии", "callback_data": "all_vacancies"}],
-                [{"text": "🗑 Очистить старые", "callback_data": "clear_old"}],
-            ]
-        }
+        return None
 
     def handle_command(self, command: str, chat_id: str):
         """Обработка команд."""
@@ -141,9 +134,14 @@ class VacancyBot:
                 "• Показывать статистику вакансий\n"
                 "• Выводить последние вакансии\n"
                 "• Очищать старую базу\n\n"
-                "Выберите действие:"
+                "<b>Доступные команды:</b>\n"
+                "/stats - Статистика вакансий\n"
+                "/vacancies - Последние 10 вакансий\n"
+                "/menu - Показать это сообщение"
             )
-            self.send_message(message, self.get_menu_keyboard(), chat_id=chat_id)
+            self.send_message(message, chat_id=chat_id)
+            # Отправляем 10 последних вакансий
+            self.show_vacancies(limit=10, chat_id=chat_id)
         
         elif command == "/stats":
             self.show_stats(chat_id=chat_id)
@@ -176,14 +174,8 @@ class VacancyBot:
         )
         if stats.get('avg_salary'):
             message += f"Средняя ЗП: <b>{stats['avg_salary']}</b>\n"
-        
-        keyboard = {
-            "inline_keyboard": [
-                [{"text": "📋 Последние", "callback_data": "last_10"}],
-                [{"text": "🔙 Меню", "callback_data": "menu"}],
-            ]
-        }
-        self.send_message(message, keyboard, chat_id=chat_id)
+
+        self.send_message(message, chat_id=chat_id)
 
     def show_vacancies(self, limit: int = 10, page: int = 0, chat_id: str = None):
         """Показать вакансии."""
@@ -211,28 +203,14 @@ class VacancyBot:
                     salary = f" | 💰 {from_s}-{to_s} {curr}"
                 elif from_s:
                     salary = f" | 💰 от {from_s} {curr}"
-            
+
             message += f"{i}. <b>{v.get('name', 'Б/н')}</b>\n"
             message += f"   🏢 {v.get('employer', 'Б/н')}{salary}\n"
             message += f"   📍 {v.get('area', 'Б/н')}\n"
             url = v.get('url', '#')
             message += f"   🔗 <a href='{url}'>Ссылка</a>\n\n"
 
-        keyboard = []
-        nav_row = []
-        
-        if page > 0:
-            nav_row.append({"text": "⬅️", "callback_data": f"page_{page-1}"})
-        
-        if page < total_pages - 1:
-            nav_row.append({"text": "➡️", "callback_data": f"page_{page+1}"})
-        
-        if nav_row:
-            keyboard.append(nav_row)
-        
-        keyboard.append([{"text": "🔙 Меню", "callback_data": "menu"}])
-
-        self.send_message(message, {"inline_keyboard": keyboard}, chat_id=chat_id)
+        self.send_message(message, chat_id=chat_id)
 
     def clear_old_vacancies(self, chat_id: str = None):
         """Очистка старых вакансий."""
@@ -241,34 +219,9 @@ class VacancyBot:
         self.send_message(message, chat_id=chat_id)
 
     def handle_callback(self, callback: dict):
-        """Обработка callback от кнопок."""
+        """Обработка callback от кнопок (отключено)."""
         callback_id = callback.get("id")
-        data = callback.get("data", "")
-        message = callback.get("message", {})
-        chat_id = message.get("chat", {}).get("id")
-        message_id = message.get("message_id") if message else None
-
-        logger.info(f"Callback: {data} from chat: {chat_id}")
-        self.answer_callback(callback_id)
-
-        if data == "menu":
-            self.send_message("Главное меню:", self.get_menu_keyboard(), chat_id=chat_id)
-        
-        elif data == "stats":
-            self.show_stats(chat_id=chat_id)
-        
-        elif data == "last_10":
-            self.show_vacancies(limit=10, chat_id=chat_id)
-        
-        elif data == "all_vacancies":
-            self.show_vacancies(limit=100, chat_id=chat_id)
-        
-        elif data == "clear_old":
-            self.clear_old_vacancies(chat_id=chat_id)
-        
-        elif data.startswith("page_"):
-            page = int(data.split("_")[1])
-            self.show_vacancies(limit=100, page=page, chat_id=chat_id)
+        logger.info(f"Callback получен (обработка отключена): {callback_id}")
 
     def run(self):
         """Запуск бота."""

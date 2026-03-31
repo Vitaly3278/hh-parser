@@ -93,23 +93,16 @@ class TelegramBot:
             elif to_salary:
                 salary_str = f"💰 до {to_salary} {currency}"
 
-        # Формируем сообщение с кнопкой
         message = (
             f"🔔 <b>Новая вакансия!</b>\n\n"
             f"<b>{name}</b>\n"
             f"🏢 {employer}\n"
             f"{salary_str}\n"
             f"📍 {city}\n\n"
+            f"🔗 <a href='{url}'>Ссылка на вакансию</a>"
         )
 
-        # Кнопка
-        reply_markup = {
-            "inline_keyboard": [[
-                {"text": "👉 Смотреть вакансию", "url": url}
-            ]]
-        }
-
-        return self.send_message(message, reply_markup=reply_markup)
+        return self.send_message(message)
 
     def send_stats(self, stats: dict) -> bool:
         """
@@ -124,19 +117,11 @@ class TelegramBot:
             f"За сегодня: <b>{stats.get('today', 0)}</b>\n"
             f"За неделю: <b>{stats.get('week', 0)}</b>\n"
         )
-        
+
         if stats.get('avg_salary'):
             message += f"Средняя ЗП: <b>{stats['avg_salary']}</b>\n"
 
-        # Кнопки
-        reply_markup = {
-            "inline_keyboard": [
-                [{"text": "📋 Последние вакансии", "callback_data": "last_10"}],
-                [{"text": "🗑 Очистить старые", "callback_data": "clear_old"}],
-            ]
-        }
-
-        return self.send_message(message, reply_markup=reply_markup)
+        return self.send_message(message)
 
     def send_vacancies_list(self, vacancies: list, page: int = 0) -> bool:
         """
@@ -174,26 +159,9 @@ class TelegramBot:
             message += f"{i}. <b>{v.get('name', 'Б/н')}</b>\n"
             message += f"   🏢 {v.get('employer', 'Б/н')}{salary}\n"
             message += f"   📍 {v.get('area', 'Б/н')}\n"
-            message += f"   🔗 <a href='{v.get('url', '#)}'>Ссылка</a>\n\n"
+            message += f"   🔗 <a href='{v.get('url', '#')}'>Ссылка</a>\n\n"
 
-        # Кнопки навигации
-        keyboard = []
-        nav_row = []
-        
-        if page > 0:
-            nav_row.append({"text": "⬅️ Назад", "callback_data": f"page_{page-1}"})
-        
-        if page < total_pages - 1:
-            nav_row.append({"text": "Вперёд ➡️", "callback_data": f"page_{page+1}"})
-        
-        if nav_row:
-            keyboard.append(nav_row)
-        
-        keyboard.append([{"text": "🔙 В меню", "callback_data": "menu"}])
-
-        reply_markup = {"inline_keyboard": keyboard} if keyboard else None
-
-        return self.send_message(message, reply_markup=reply_markup)
+        return self.send_message(message)
 
     def test_connection(self) -> bool:
         """
@@ -202,16 +170,7 @@ class TelegramBot:
         :return: True если соединение успешно
         """
         logger.info("Проверка соединения с Telegram...")
-        
-        # Кнопка для теста
-        reply_markup = {
-            "inline_keyboard": [
-                [{"text": "✅ Работает!", "callback_data": "test_ok"}]
-            ]
-        }
-        
         return self.send_message(
             "✅ <b>HH Tracker подключен!</b>\n\n"
-            "Бот готов к работе и отправке уведомлений.",
-            reply_markup=reply_markup
+            "Бот готов к работе и отправке уведомлений."
         )
