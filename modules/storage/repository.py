@@ -1,10 +1,13 @@
 """Репозиторий для работы с вакансиями."""
 
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from datetime import datetime
 
 from .models import Vacancy
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractVacancyRepository(ABC):
@@ -99,18 +102,33 @@ class VacancyRepository(AbstractVacancyRepository):
         """Добавить вакансию."""
         from sqlalchemy import select
         from .database import VacancyModel
-
-        if self.exists(vacancy.id):
-            return False
+        from datetime import datetime
 
         session = self._get_session()
         try:
-            model = VacancyModel(**vacancy.to_dict())
+            # Проверяем существование в той же сессии
+            stmt = select(VacancyModel).where(VacancyModel.id == vacancy.id)
+            exists = session.execute(stmt).scalar_one_or_none() is not None
+            
+            if exists:
+                return False
+
+            # Преобразуем данные для модели
+            data = vacancy.to_dict()
+            # created_at должен быть datetime объектом
+            if isinstance(data.get('created_at'), str):
+                try:
+                    data['created_at'] = datetime.fromisoformat(data['created_at'])
+                except (ValueError, TypeError):
+                    data['created_at'] = datetime.utcnow()
+
+            model = VacancyModel(**data)
             session.add(model)
             session.commit()
             return True
-        except Exception:
+        except Exception as e:
             session.rollback()
+            logger.error(f"Ошибка при добавлении вакансии: {e}")
             return False
         finally:
             session.close()
