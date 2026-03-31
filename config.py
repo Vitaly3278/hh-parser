@@ -1,6 +1,7 @@
 """Конфигурация приложения."""
 
 import os
+from typing import Optional, List
 from dotenv import load_dotenv
 
 # Загрузка переменных из .env
@@ -22,25 +23,25 @@ def parse_optional(value: str, type_func=None):
 
 
 # Telegram (обязательно)
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
-ALLOWED_CHAT_IDS = parse_list(os.getenv('ALLOWED_CHAT_IDS', ''))  # Список разрешённых chat_id
+TELEGRAM_BOT_TOKEN: str = os.getenv('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_CHAT_ID: str = os.getenv('TELEGRAM_CHAT_ID', '')
+ALLOWED_CHAT_IDS: List[str] = parse_list(os.getenv('ALLOWED_CHAT_IDS', ''))
 
 # Email уведомления (опционально)
-EMAIL_ENABLED = os.getenv('EMAIL_ENABLED', 'false').lower() == 'true'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_USER = os.getenv('EMAIL_USER', '')
-EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD', '')
-EMAIL_RECIPIENT = os.getenv('EMAIL_RECIPIENT', '')
+EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', 'false').lower() == 'true'
+EMAIL_HOST: str = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT: int = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USER: str = os.getenv('EMAIL_USER', '')
+EMAIL_PASSWORD: str = os.getenv('EMAIL_PASSWORD', '')
+EMAIL_RECIPIENT: str = os.getenv('EMAIL_RECIPIENT', '')
 
 # HH.ru параметры
-HH_SEARCH_TEXT = os.getenv('HH_SEARCH_TEXT', 'Python разработчик')
-HH_AREA = parse_optional(os.getenv('HH_AREA', ''))
-HH_SALARY_FROM = parse_optional(os.getenv('HH_SALARY_FROM', ''), int)
-HH_EMPLOYMENT = parse_list(os.getenv('HH_EMPLOYMENT', '')) or None
-HH_EXPERIENCE = parse_list(os.getenv('HH_EXPERIENCE', '')) or None
-HH_EXCLUDE_WORDS = parse_list(os.getenv('HH_EXCLUDE_WORDS', ''))
+HH_SEARCH_TEXT: str = os.getenv('HH_SEARCH_TEXT', 'Python разработчик')
+HH_AREA: Optional[str] = parse_optional(os.getenv('HH_AREA', ''))
+HH_SALARY_FROM: Optional[int] = parse_optional(os.getenv('HH_SALARY_FROM', ''), int)
+HH_EMPLOYMENT: Optional[List[str]] = parse_list(os.getenv('HH_EMPLOYMENT', '')) or None
+HH_EXPERIENCE: Optional[List[str]] = parse_list(os.getenv('HH_EXPERIENCE', '')) or None
+HH_EXCLUDE_WORDS: List[str] = parse_list(os.getenv('HH_EXCLUDE_WORDS', ''))
 
 # Интервал проверки (секунды)
 CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '300'))
