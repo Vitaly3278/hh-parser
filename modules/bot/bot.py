@@ -49,6 +49,8 @@ class TelegramBot:
 
     def _create_handlers(self) -> CommandHandlers:
         """Создание обработчиков команд."""
+        if self.repository is None:
+            raise ConfigError("Repository не инициализирован")
         return CommandHandlers(
             repository=self.repository,
             allowed_chat_ids=self.allowed_chat_ids
