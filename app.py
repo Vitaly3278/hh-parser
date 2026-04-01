@@ -79,6 +79,11 @@ class Application:
             return
 
         logger.info("📥 База пуста. Загрузка вакансий с hh.ru...")
+        
+        if self.service is None:
+            logger.error("Service не инициализирован")
+            return
+            
         new_count = await self.service.check_vacancies()
 
         if new_count > 0:
