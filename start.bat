@@ -20,9 +20,9 @@ REM Запуск в фоне
 echo 📡 Запуск трекера вакансий...
 start /B python main.py
 echo 🤖 Запуск Telegram бота...
-start /B python bot.py
+start /B python run_bot.py
 echo 🌐 Запуск веб-интерфейса...
-start /B python web.py
+start /B python run_web.py
 
 echo.
 echo ✅ Запущено:

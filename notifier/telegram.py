@@ -8,7 +8,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 from core import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 from core.exceptions import NotificationError
-from modules.storage.models import Vacancy
+from storage.models import Vacancy
 from .base import AbstractNotifier
 
 

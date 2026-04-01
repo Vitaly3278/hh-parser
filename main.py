@@ -112,8 +112,8 @@ def main():
 
         elif args.web:
             # Веб-интерфейс
-            from modules.web.app import create_web_app
-            from modules.storage import get_database
+            from web.app import create_web_app
+            from storage import get_database
             import uvicorn
 
             db = get_database()

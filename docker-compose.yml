@@ -25,6 +25,6 @@ services:
       - ./logs:/app/logs
     ports:
       - "8000:8000"
-    command: ["python", "web.py"]
+    command: ["python", "run_web.py"]
     depends_on:
       - hh-tracker

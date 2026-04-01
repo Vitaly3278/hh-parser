@@ -6,8 +6,8 @@ echo "🚀 Запуск HH Tracker..."
 # Убийство старых процессов
 echo "🧹 Очистка старых процессов..."
 pkill -f "python.*main.py" 2>/dev/null
-pkill -f "python.*bot.py" 2>/dev/null
-pkill -f "python.*web.py" 2>/dev/null
+pkill -f "python.*run_bot.py" 2>/dev/null
+pkill -f "python.*run_web.py" 2>/dev/null
 sleep 1
 
 # Создание виртуального окружения

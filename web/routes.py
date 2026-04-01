@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from modules.storage.models import Vacancy
-from modules.storage.repository import VacancyRepository
+from storage.models import Vacancy
+from storage.repository import VacancyRepository
 
 
 async def home(

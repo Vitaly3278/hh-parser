@@ -4,7 +4,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from modules.parser.hh_client import HHClient
+from parser.hh_client import HHClient
 
 
 class TestHHParser(unittest.TestCase):

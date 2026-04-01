@@ -13,9 +13,9 @@ from telegram.ext import (
 
 from core import TELEGRAM_BOT_TOKEN
 from core.exceptions import ConfigError
-from modules.bot.handlers import CommandHandlers
-from modules.bot.rate_limiter import RateLimiter
-from modules.storage.repository import VacancyRepository
+from bot.handlers import CommandHandlers
+from bot.rate_limiter import RateLimiter
+from storage.repository import VacancyRepository
 
 
 logger = logging.getLogger(__name__)

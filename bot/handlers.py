@@ -8,7 +8,7 @@ from telegram.ext import ContextTypes
 
 from core import ALLOWED_CHAT_IDS, TELEGRAM_CHAT_ID
 from core.exceptions import UnauthorizedError
-from modules.storage.repository import VacancyRepository
+from storage.repository import VacancyRepository
 
 
 logger = logging.getLogger(__name__)

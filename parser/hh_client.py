@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Any
 import aiohttp
 
 from core import HH_AREA, HH_EXCLUDE_WORDS
-from modules.storage.models import Vacancy
+from storage.models import Vacancy
 
 
 logger = logging.getLogger(__name__)

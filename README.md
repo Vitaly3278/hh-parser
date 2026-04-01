@@ -33,30 +33,29 @@ hh/
 │   ├── exceptions.py      # Исключения
 │   └── logger.py          # Логирование
 │
-├── modules/               # Модули
-│   ├── bot/               # Telegram бот
-│   │   ├── bot.py         # Класс бота
-│   │   ├── handlers.py    # Обработчики команд
-│   │   └── rate_limiter.py # Rate limiting
-│   │
-│   ├── parser/            # Парсер hh.ru
-│   │   ├── hh_client.py   # API клиент
-│   │   └── filters.py     # Фильтры вакансий
-│   │
-│   ├── notifier/          # Уведомления
-│   │   ├── base.py        # Базовый класс
-│   │   ├── telegram.py    # Telegram notifier
-│   │   └── email.py       # Email notifier
-│   │
-│   ├── storage/           # Хранение данных
-│   │   ├── models.py      # Модели
-│   │   ├── repository.py  # Репозиторий
-│   │   └── database.py    # База данных
-│   │
-│   └── web/               # Веб-интерфейс
-│       ├── app.py         # FastAPI приложение
-│       ├── routes.py      # API роуты
-│       └── templates/     # HTML шаблоны
+├── bot/                   # Telegram бот
+│   ├── bot.py             # Класс бота
+│   ├── handlers.py        # Обработчики команд
+│   └── rate_limiter.py    # Rate limiting
+│
+├── parser/                # Парсер hh.ru
+│   ├── hh_client.py       # API клиент
+│   └── filters.py         # Фильтры вакансий
+│
+├── notifier/              # Уведомления
+│   ├── base.py            # Базовый класс
+│   ├── telegram.py        # Telegram notifier
+│   └── email.py           # Email notifier
+│
+├── storage/               # Хранение данных
+│   ├── models.py          # Модели
+│   ├── repository.py      # Репозиторий
+│   └── database.py        # База данных
+│
+├── web/                   # Веб-интерфейс
+│   ├── app.py             # FastAPI приложение
+│   ├── routes.py          # API роуты
+│   └── templates/         # HTML шаблоны
 │
 ├── services/              # Сервисы
 │   └── vacancy_service.py # Сервис вакансий
@@ -66,8 +65,8 @@ hh/
 │
 ├── app.py                 # Сборка приложения
 ├── main.py                # Точка входа
-├── bot.py                 # Запуск бота
-├── web.py                 # Запуск веб-интерфейса
+├── run_bot.py             # Запуск бота
+├── run_web.py             # Запуск веб-интерфейса
 └── requirements.txt       # Зависимости
 ```
 
@@ -168,7 +167,7 @@ python main.py
 ```bash
 python main.py --bot-only
 # или
-python bot.py
+python run_bot.py
 ```
 
 ### Запуск только трекера (без бота)
@@ -182,7 +181,7 @@ python main.py --tracker-only
 ```bash
 python main.py --web
 # или
-python web.py
+python run_web.py
 ```
 
 ### Однократная проверка (для cron)
@@ -230,7 +229,7 @@ docker-compose down
 Запустите веб-сервер:
 
 ```bash
-python web.py
+python run_web.py
 ```
 
 Откройте http://localhost:8000

@@ -16,12 +16,12 @@ from core import (
     CHECK_INTERVAL,
 )
 from core.logger import get_logger
-from modules.parser import HHClient, VacancyFilter
-from modules.storage import Vacancy, VacancyRepository
-from modules.notifier import AbstractNotifier
+from parser import HHClient, VacancyFilter
+from storage import Vacancy, VacancyRepository
+from notifier import AbstractNotifier
 
 if TYPE_CHECKING:
-    from modules.storage.repository import VacancyRepository
+    from storage.repository import VacancyRepository
 
 
 logger = get_logger(__name__)

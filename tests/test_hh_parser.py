@@ -4,7 +4,7 @@ import pytest
 import aiohttp
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from modules.parser.hh_client import HHClient
+from parser.hh_client import HHClient
 
 
 @pytest.fixture

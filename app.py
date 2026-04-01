@@ -11,12 +11,12 @@ import uvicorn
 
 from core import setup_logging, get_logger, CHECK_INTERVAL, WEB_HOST, WEB_PORT
 from core.exceptions import ConfigError
-from modules.storage import Database, VacancyRepository, get_database
-from modules.parser import HHClient
-from modules.notifier import TelegramNotifier, EmailNotifier, AbstractNotifier
-from modules.bot import TelegramBot
+from storage import Database, VacancyRepository, get_database
+from parser import HHClient
+from notifier import TelegramNotifier, EmailNotifier, AbstractNotifier
+from bot import TelegramBot
 from services import VacancyService
-from modules.web.app import create_web_app
+from web.app import create_web_app
 
 
 logger = get_logger(__name__)

@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from modules.storage.models import Vacancy
+from storage.models import Vacancy
 
 
 class AbstractNotifier(ABC):

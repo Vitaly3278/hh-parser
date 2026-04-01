@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from modules.storage.models import Vacancy
+from storage.models import Vacancy
 
 
 logger = logging.getLogger(__name__)

@@ -15,7 +15,7 @@ from core import (
     EMAIL_RECIPIENT,
 )
 from core.exceptions import NotificationError
-from modules.storage.models import Vacancy
+from storage.models import Vacancy
 from .base import AbstractNotifier
 
 

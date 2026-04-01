@@ -5,9 +5,9 @@ import asyncio
 import aiohttp
 
 from core import get_logger
-from modules.bot import TelegramBot
-from modules.storage import get_database, VacancyRepository
-from modules.parser import HHClient
+from bot import TelegramBot
+from storage import get_database, VacancyRepository
+from parser import HHClient
 from services import VacancyService
 
 

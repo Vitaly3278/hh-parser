@@ -3,8 +3,8 @@
 
 import uvicorn
 from core import WEB_HOST, WEB_PORT
-from modules.storage import get_database, VacancyRepository
-from modules.web.app import create_web_app
+from storage import get_database, VacancyRepository
+from web.app import create_web_app
 
 
 def main():

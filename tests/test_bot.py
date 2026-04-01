@@ -2,7 +2,7 @@
 
 import pytest
 import time
-from modules.bot.rate_limiter import RateLimiter
+from bot.rate_limiter import RateLimiter
 
 
 class TestRateLimiter:
