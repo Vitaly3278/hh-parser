@@ -36,7 +36,16 @@ async def run_main_app(app: Application, once: bool = False):
 
     # Бот запускается в главном потоке (требование python-telegram-bot)
     logger.info("🤖 Бот запущен в главном потоке")
-    app.run_bot()
+    try:
+        app.run_bot()
+    except KeyboardInterrupt:
+        logger.info("Остановка по Ctrl+C")
+    finally:
+        # Остановка трекера
+        app.running = False
+        tracker_thread.join(timeout=2)
+        # Остановка веб
+        app.shutdown()
 
 
 def main():

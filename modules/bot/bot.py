@@ -60,6 +60,10 @@ class TelegramBot:
         """Обработка ошибок."""
         logger.error(f"Exception caused error: {context.error}")
 
+    async def _error_handler_wrapper(self, context: ContextTypes.DEFAULT_TYPE):
+        """Обертка для error_handler."""
+        await self._error_handler(context)
+
     def run(self) -> None:
         """Запуск бота."""
         logger.info("🤖 Запуск HH Tracker Bot...")
@@ -84,8 +88,8 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("prev", self.handlers.prev_command))
 
         # Обработчик ошибок
-        self.application.add_error_handler(self._error_handler)
+        self.application.add_error_handler(self._error_handler_wrapper)
 
         # Запуск
         logger.info("Ожидание сообщений...")
-        self.application.run_polling(allowed_updates=Update.ALL_TYPES)
+        self.application.run_polling(allowed_updates=Update.ALL_TYPES, stop_signals=None)
