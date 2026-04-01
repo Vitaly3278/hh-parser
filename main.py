@@ -26,18 +26,23 @@ async def run_main_app(app: Application, once: bool = False):
     """Запуск основного приложения."""
     await app.initialize()
 
-    # Запуск веб-интерфейса в отдельном потоке (не daemon)
+    # Запуск веб-интерфейса в отдельном потоке
     web_thread = threading.Thread(target=app.run_web, args=())
     web_thread.start()
 
-    # Запуск трекера в отдельном потоке (не daemon)
+    # Запуск трекера в отдельном потоке
     tracker_thread = threading.Thread(target=lambda: asyncio.run(app.run_tracker(once=once)))
     tracker_thread.start()
 
-    # Бот запускается в главном потоке (требование python-telegram-bot)
+    # Бот запускается в главном потоке с новым event loop
     logger.info("🤖 Бот запущен в главном потоке")
     try:
+        # Создаём новый event loop для бота
+        import asyncio
+        new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(new_loop)
         app.run_bot()
+        new_loop.close()
     except KeyboardInterrupt:
         logger.info("Остановка по Ctrl+C")
     finally:

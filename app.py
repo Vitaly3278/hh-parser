@@ -124,33 +124,37 @@ class Application:
         """
         logger.info("🚀 Запуск трекера вакансий...")
 
-        self.running = True
-        while self.running:
-            try:
-                new_count = await self.service.check_vacancies()
+        # Создаём свою сессию для трекера
+        async with aiohttp.ClientSession() as session:
+            self.service.http_session = session
+            
+            self.running = True
+            while self.running:
+                try:
+                    new_count = await self.service.check_vacancies()
 
-                if new_count > 0:
-                    logger.info(f"Найдено {new_count} новых вакансий")
-                    # Отправка уведомлений
-                    recent = self.repository.get_recent(hours=1)
-                    for vacancy in recent:
-                        await self.service.notify_vacancy(vacancy, self.notifiers)
+                    if new_count > 0:
+                        logger.info(f"Найдено {new_count} новых вакансий")
+                        # Отправка уведомлений
+                        recent = self.repository.get_recent(hours=1)
+                        for vacancy in recent:
+                            await self.service.notify_vacancy(vacancy, self.notifiers)
 
-                if once:
-                    logger.info("Однократная проверка завершена")
-                    break
+                    if once:
+                        logger.info("Однократная проверка завершена")
+                        break
 
-                # Ожидание
-                for _ in range(CHECK_INTERVAL):
+                    # Ожидание
+                    for _ in range(CHECK_INTERVAL):
+                        if not self.running:
+                            break
+                        await asyncio.sleep(1)
+
+                except Exception as e:
+                    logger.error(f"Ошибка в цикле проверки: {e}", exc_info=True)
                     if not self.running:
                         break
-                    await asyncio.sleep(1)
-
-            except Exception as e:
-                logger.error(f"Ошибка в цикле проверки: {e}", exc_info=True)
-                if not self.running:
-                    break
-                await asyncio.sleep(10)
+                    await asyncio.sleep(10)
 
     def run_bot(self):
         """Запуск Telegram бота (в отдельном потоке)."""
