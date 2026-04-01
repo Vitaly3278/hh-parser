@@ -102,6 +102,9 @@ class VacancyService:
                 self.repository.add(vacancy)
                 self.stats['new_vacancies_count'] += 1
 
+            # Сохраняем новые вакансии для уведомлений
+            self._last_new_vacancies = new_vacancies
+
             # Очистка старых записей (раз в час)
             if datetime.now().minute == 0:
                 deleted = self.repository.clear_old(days=30)
@@ -114,6 +117,24 @@ class VacancyService:
             logger.error(f"Ошибка при проверке вакансий: {e}", exc_info=True)
             self.stats['errors_count'] += 1
             return 0
+
+    async def notify_new_vacancies(
+        self,
+        notifiers: List[AbstractNotifier]
+    ) -> None:
+        """
+        Отправка уведомлений о новых вакансиях.
+
+        :param notifiers: Список нотификаторов
+        """
+        new_vacancies = getattr(self, '_last_new_vacancies', [])
+        for vacancy in new_vacancies:
+            try:
+                await self.notify_vacancy(vacancy, notifiers)
+            except Exception as e:
+                logger.error(f"Ошибка отправки уведомления: {e}")
+        # Очищаем список после отправки
+        self._last_new_vacancies = []
 
     async def notify_vacancy(
         self,

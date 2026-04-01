@@ -141,10 +141,8 @@ class Application:
 
                     if new_count > 0:
                         logger.info(f"Найдено {new_count} новых вакансий")
-                        # Отправка уведомлений
-                        recent = self.repository.get_recent(hours=1)
-                        for vacancy in recent:
-                            await self.service.notify_vacancy(vacancy, self.notifiers)
+                        # Отправка уведомлений только по новым вакансиям
+                        await self.service.notify_new_vacancies(self.notifiers)
 
                     if once:
                         logger.info("Однократная проверка завершена")
