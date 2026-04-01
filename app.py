@@ -69,6 +69,10 @@ class Application:
 
     async def _load_initial_vacancies(self):
         """Загрузка начальных вакансий если база пустая."""
+        if self.repository is None:
+            logger.error("Repository не инициализирован")
+            return
+            
         count = self.repository.count()
         if count > 0:
             logger.info(f"✅ В базе уже есть {count} вакансий")
