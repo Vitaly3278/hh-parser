@@ -339,15 +339,3 @@ CHECK_INTERVAL=300
 # Запуск каждые 5 минут
 */5 * * * * cd /path/to/hh-parser && /usr/bin/python3 main.py --once >> hh_tracker.log 2>&1
 ```
-
-## 📄 Лицензия
-
-MIT License
-
-## 🤝 Contributing
-
-1. Fork репозиторий
-2. Создайте feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit изменений (`git commit -m 'Add amazing feature'`)
-4. Push в branch (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
