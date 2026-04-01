@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HH Tracker — Вакансии</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 { color: #666; font-size: 14px; margin-bottom: 5px; }
+        .stat-card .value { color: #333; font-size: 24px; font-weight: bold; }
+        .vacancies { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .vacancy-card {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .vacancy-card:last-child { border-bottom: none; }
+        .vacancy-card h3 { color: #007bff; margin-bottom: 8px; }
+        .vacancy-card .employer { color: #666; margin-bottom: 10px; }
+        .vacancy-card .salary { color: #28a745; font-weight: bold; }
+        .vacancy-card .area { color: #999; font-size: 14px; }
+        .vacancy-card a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .vacancy-card a:hover { text-decoration: underline; }
+        .empty { padding: 40px; text-align: center; color: #999; }
+        header { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💼 HH Tracker — Вакансии</h1>
+        </header>
+
+        <section class="stats">
+            <div class="stat-card">
+                <h3>Всего вакансий</h3>
+                <div class="value">{{ stats.total_count }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Новых за час</h3>
+                <div class="value">{{ stats.last_hour_count }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Новых за день</h3>
+                <div class="value">{{ stats.last_day_count }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Средняя зарплата</h3>
+                <div class="value">{{ stats.avg_salary or '—' }}</div>
+            </div>
+        </section>
+
+        <section class="vacancies">
+            <h2 style="padding: 20px 20px 0; margin-bottom: 10px;">Последние вакансии</h2>
+            {% if vacancies %}
+                {% for v in vacancies %}
+                <div class="vacancy-card">
+                    <h3>{{ v.name }}</h3>
+                    <div class="employer">🏢 {{ v.employer }}</div>
+                    {% if v.salary %}
+                    <div class="salary">💰 {{ v.salary }}</div>
+                    {% endif %}
+                    <div class="area">📍 {{ v.area }} | 📅 {{ v.published_at }}</div>
+                    <a href="{{ v.url }}" target="_blank">Открыть вакансию →</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">Вакансий пока нет</div>
+            {% endif %}
+        </section>
+    </div>
+</body>
+</html>
