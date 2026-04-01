@@ -1,5 +1,6 @@
 """Telegram бот на python-telegram-bot."""
 
+import asyncio
 import logging
 from typing import Optional
 
@@ -64,8 +65,8 @@ class TelegramBot:
         """Обертка для error_handler."""
         await self._error_handler(context)
 
-    def run(self) -> None:
-        """Запуск бота."""
+    async def start(self) -> None:
+        """Асинхронный запуск бота."""
         logger.info("🤖 Запуск HH Tracker Bot...")
 
         # Создаём обработчики
@@ -92,4 +93,14 @@ class TelegramBot:
 
         # Запуск
         logger.info("Ожидание сообщений...")
-        self.application.run_polling(allowed_updates=Update.ALL_TYPES, stop_signals=None)
+        await self.application.initialize()
+        await self.application.start()
+        await self.application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+
+        # Держим бота запущенным
+        while True:
+            await asyncio.sleep(1)
+
+    def run(self) -> None:
+        """Запуск бота (синхронная обертка)."""
+        asyncio.run(self.start())

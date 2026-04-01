@@ -128,10 +128,12 @@ class Application:
             logger.error("Service не инициализирован")
             return
 
-        # Создаём свою сессию для трекера
+        # Создаём свою сессию для трекера и обновляем parser
         async with aiohttp.ClientSession() as session:
             self.service.http_session = session
-            
+            # Обновляем сессию в parser
+            self.service.parser._session = session
+
             self.running = True
             while self.running:
                 try:
@@ -165,7 +167,13 @@ class Application:
         if self.telegram_bot:
             logger.info("🤖 Запуск Telegram бота...")
             try:
-                self.telegram_bot.run()
+                # Создаём новый event loop для бота в отдельном потоке
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(self.telegram_bot.start())
+                finally:
+                    loop.close()
             except Exception as e:
                 logger.error(f"Ошибка бота: {e}", exc_info=True)
 

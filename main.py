@@ -30,27 +30,33 @@ async def run_main_app(app: Application, once: bool = False):
     web_thread = threading.Thread(target=app.run_web, args=())
     web_thread.start()
 
-    # Запуск трекера в отдельном потоке
-    tracker_thread = threading.Thread(target=lambda: asyncio.run(app.run_tracker(once=once)))
-    tracker_thread.start()
+    # Запуск трекера в текущем event loop (асинхронно)
+    app.running = True
+    tracker_task = asyncio.create_task(app.run_tracker(once=once))
 
-    # Бот запускается в главном потоке с новым event loop
-    logger.info("🤖 Бот запущен в главном потоке")
+    # Бот запускается в отдельном потоке со своим event loop
+    logger.info("🤖 Бот запущен в отдельном потоке")
+    bot_thread = threading.Thread(target=app.run_bot)
+    bot_thread.start()
+
     try:
-        # Создаём новый event loop для бота
-        import asyncio
-        new_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(new_loop)
-        app.run_bot()
-        new_loop.close()
+        # Ожидание завершения трекера (если once) или бесконечный цикл
+        if once:
+            await tracker_task
+        else:
+            # Держим приложение запущенным
+            while app.running:
+                await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Остановка по Ctrl+C")
     finally:
-        # Остановка трекера
+        # Остановка
         app.running = False
-        tracker_thread.join(timeout=2)
-        # Остановка веб
-        app.shutdown()
+        await app.shutdown()
+
+        # Ожидание потоков
+        bot_thread.join(timeout=2)
+        web_thread.join(timeout=2)
 
 
 def main():
