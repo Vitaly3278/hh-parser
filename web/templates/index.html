@@ -401,22 +401,22 @@
                 <div class="stat-card">
                     <div class="stat-icon">📊</div>
                     <div class="stat-label">Всего вакансий</div>
-                    <div class="stat-value">{{ stats.total_count }}</div>
+                    <div class="stat-value">{{ stats.total }}</div>
                     <div class="stat-subtitle">в базе данных</div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-icon">⏰</div>
-                    <div class="stat-label">Новых за час</div>
-                    <div class="stat-value">{{ stats.last_hour_count }}</div>
-                    <div class="stat-subtitle">последние 60 минут</div>
+                    <div class="stat-label">Новых за 24 часа</div>
+                    <div class="stat-value">{{ stats.today }}</div>
+                    <div class="stat-subtitle">последние 24 часа</div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-icon">📅</div>
-                    <div class="stat-label">Новых за день</div>
-                    <div class="stat-value">{{ stats.last_day_count }}</div>
-                    <div class="stat-subtitle">последние 24 часа</div>
+                    <div class="stat-label">Новых за неделю</div>
+                    <div class="stat-value">{{ stats.week }}</div>
+                    <div class="stat-subtitle">последние 7 дней</div>
                 </div>
                 
                 <div class="stat-card">

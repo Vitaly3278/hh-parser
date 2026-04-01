@@ -248,6 +248,7 @@ class VacancyRepository(AbstractVacancyRepository):
                 "week": week,
                 "avg_salary": round(avg_salary, 0) if avg_salary else None,
                 "top_employers": [{"employer": row[0], "count": row[1]} for row in top_employers],
+                "last_check": datetime.now().strftime('%d.%m.%Y %H:%M'),
             }
         finally:
             session.close()
