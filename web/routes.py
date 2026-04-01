@@ -16,8 +16,11 @@ async def home(
     templates
 ) -> HTMLResponse:
     """Главная страница с вакансиями."""
-    vacancies = repository.get_all(limit=50)
+    vacancies = repository.get_all(limit=100)
     stats = repository.get_stats()
+    salary_stats = repository.get_salary_stats()
+    top_employers = repository.get_top_employers(limit=5)
+    area_stats = repository.get_area_stats(limit=10)
 
     # Форматируем вакансии для отображения
     formatted_vacancies = []
@@ -26,10 +29,13 @@ async def home(
             'id': v.id,
             'name': v.name,
             'employer': v.employer or 'Б/н',
-            'salary': v.formatted_salary() if v.has_salary() else "",
+            'salary': v.formatted_salary() if v.has_salary() else "Не указана",
+            'salary_from': v.salary_from,
+            'salary_to': v.salary_to,
             'area': v.area or 'Б/н',
             'url': v.url or '#',
             'published_at': v.published_at[:10] if v.published_at else '',
+            'created_at': v.created_at.strftime('%d.%m.%Y %H:%M') if v.created_at else '',
         })
 
     return templates.TemplateResponse(
@@ -38,7 +44,11 @@ async def home(
         context={
             "vacancies": formatted_vacancies,
             "stats": stats,
+            "salary_stats": salary_stats,
+            "top_employers": top_employers,
+            "area_stats": area_stats,
             "total_count": len(vacancies),
+            "current_year": datetime.now().year,
         }
     )
 

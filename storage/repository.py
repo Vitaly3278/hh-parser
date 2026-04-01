@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from .models import Vacancy
@@ -277,6 +277,52 @@ class VacancyRepository(AbstractVacancyRepository):
                 "avg_to": round(row[3], 0) if row[3] else None,
                 "with_salary": row[4],
             }
+        finally:
+            session.close()
+
+    def get_top_employers(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Получить топ работодателей."""
+        from sqlalchemy import func, select
+        from .database import VacancyModel
+
+        session = self._get_session()
+        try:
+            stmt = select(
+                VacancyModel.employer,
+                func.count().label('count')
+            ).where(
+                VacancyModel.employer.isnot(None)
+            ).group_by(
+                VacancyModel.employer
+            ).order_by(
+                func.count().desc()
+            ).limit(limit)
+            
+            result = session.execute(stmt).all()
+            return [{"employer": row[0], "count": row[1]} for row in result]
+        finally:
+            session.close()
+
+    def get_area_stats(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Получить статистику по регионам."""
+        from sqlalchemy import func, select
+        from .database import VacancyModel
+
+        session = self._get_session()
+        try:
+            stmt = select(
+                VacancyModel.area,
+                func.count().label('count')
+            ).where(
+                VacancyModel.area.isnot(None)
+            ).group_by(
+                VacancyModel.area
+            ).order_by(
+                func.count().desc()
+            ).limit(limit)
+            
+            result = session.execute(stmt).all()
+            return [{"area": row[0], "count": row[1]} for row in result]
         finally:
             session.close()
 
