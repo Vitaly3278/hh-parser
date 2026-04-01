@@ -26,16 +26,17 @@ async def run_main_app(app: Application, once: bool = False):
     """Запуск основного приложения."""
     await app.initialize()
 
-    # Запуск бота в отдельном потоке
-    bot_thread = threading.Thread(target=app.run_bot, args=(), daemon=True)
-    bot_thread.start()
-
     # Запуск веб-интерфейса в отдельном потоке
     web_thread = threading.Thread(target=app.run_web, args=(), daemon=True)
     web_thread.start()
 
-    # Запуск трекера
-    await app.run_tracker(once=once)
+    # Запуск трекера в отдельном потоке
+    tracker_thread = threading.Thread(target=lambda: asyncio.run(app.run_tracker(once=once)), daemon=True)
+    tracker_thread.start()
+
+    # Бот запускается в главном потоке (требование python-telegram-bot)
+    logger.info("🤖 Бот запущен в главном потоке")
+    app.run_bot()
 
 
 def main():
