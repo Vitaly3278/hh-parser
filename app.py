@@ -124,6 +124,10 @@ class Application:
         """
         logger.info("🚀 Запуск трекера вакансий...")
 
+        if not self.service:
+            logger.error("Service не инициализирован")
+            return
+
         # Создаём свою сессию для трекера
         async with aiohttp.ClientSession() as session:
             self.service.http_session = session
