@@ -44,12 +44,17 @@ class CommandHandlers:
 
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /start."""
+        logger.info(f"Получена команда /start от chat_id={update.effective_chat.id if update.effective_chat else 'None'}")
+        
         if not update.effective_chat or not update.effective_message:
+            logger.warning("Нет effective_chat или effective_message")
             return
 
         chat_id = update.effective_chat.id
+        logger.info(f"Проверка авторизации для chat_id={chat_id}")
 
         if not self.is_authorized(chat_id):
+            logger.warning(f"Неавторизованный доступ: chat_id={chat_id}")
             await update.effective_message.reply_text("❌ Доступ запрещён")
             return
 
@@ -119,10 +124,14 @@ class CommandHandlers:
 
     async def vacancies_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка команды /vacancies."""
+        logger.info(f"Получена команда /vacancies от chat_id={update.effective_chat.id if update.effective_chat else 'None'}")
+        
         if not update.effective_message:
+            logger.warning("Нет effective_message")
             return
             
         if not self.is_authorized(update.effective_chat.id if update.effective_chat else 0):
+            logger.warning(f"Неавторизованный доступ: chat_id={update.effective_chat.id if update.effective_chat else 'None'}")
             await update.effective_message.reply_text("❌ Доступ запрещён")
             return
             

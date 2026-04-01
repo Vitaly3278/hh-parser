@@ -156,13 +156,19 @@ class Application:
         """Запуск Telegram бота (в отдельном потоке)."""
         if self.telegram_bot:
             logger.info("🤖 Запуск Telegram бота...")
-            self.telegram_bot.run()
+            try:
+                self.telegram_bot.run()
+            except Exception as e:
+                logger.error(f"Ошибка бота: {e}", exc_info=True)
 
     def run_web(self):
         """Запуск веб-интерфейса (в отдельном потоке)."""
         if self.web_app:
             logger.info(f"🌐 Запуск веб-интерфейса на http://{WEB_HOST}:{WEB_PORT}...")
-            uvicorn.run(self.web_app, host=WEB_HOST, port=WEB_PORT, log_level="error")
+            try:
+                uvicorn.run(self.web_app, host=WEB_HOST, port=WEB_PORT, log_level="error")
+            except Exception as e:
+                logger.error(f"Ошибка веб-интерфейса: {e}", exc_info=True)
 
     def stop(self):
         """Остановка приложения."""
